@@ -13,13 +13,15 @@
  */
 package com.goodow.realtime.operation.util;
 
+import java.io.Serializable;
+
 /**
  * An immutable ordered pair of typed objects.
  * 
  * @param <A> Type of value 1
  * @param <B> Type of value 2
  */
-public class Pair<A, B> {
+public class Pair<A, B> implements Serializable {
 
   /**
    * Static constructor to save typing on generic arguments.

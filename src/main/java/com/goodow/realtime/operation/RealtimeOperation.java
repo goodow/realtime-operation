@@ -111,7 +111,7 @@ public class RealtimeOperation<T> implements Operation<T> {
   }
 
   @Override
-  public Operation<T> invert() {
+  public RealtimeOperation<T> invert() {
     return new RealtimeOperation<T>(op.invert(), userId, sessionId);
   }
 
