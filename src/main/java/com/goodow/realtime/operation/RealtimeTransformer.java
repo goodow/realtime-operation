@@ -124,17 +124,15 @@ public class RealtimeTransformer implements Transformer<RealtimeOperation<?>> {
             serverOp.transformWith(clientOp);
         serverOp = pair.first;
         clientOp = pair.second;
+        if (clientOp.isNoOp()) {
+          cOps.removeByIndex(j--);
+        } else {
+          cOps.set(j, clientOp);
+        }
         if (serverOp.isNoOp()) {
           sOps.removeByIndex(i--);
-          if (clientOp.isNoOp()) {
-            cOps.removeByIndex(j--);
-          }
           continue sLoop;
-        } else if (clientOp.isNoOp()) {
-          cOps.removeByIndex(j--);
-          continue;
         }
-        cOps.set(j, clientOp);
       }
       sOps.set(i, serverOp);
     }
