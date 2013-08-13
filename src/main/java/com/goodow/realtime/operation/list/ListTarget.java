@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Goodow.com
+ * Copyright 2013 Goodow.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,12 +11,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.goodow.realtime.operation.list.algorithm;
+package com.goodow.realtime.operation.list;
 
 public interface ListTarget<T> {
-  ListTarget<T> delete(T list);
+  void insert(int startIndex, T values);
 
-  ListTarget<T> insert(T list);
+  void delete(int startIndex, int length);
 
-  ListTarget<T> retain(int length);
+  void replace(int startIndex, T values);
 }

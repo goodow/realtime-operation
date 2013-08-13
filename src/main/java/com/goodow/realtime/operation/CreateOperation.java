@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Goodow.com
+ * Copyright 2013 Goodow.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,27 +13,25 @@
  */
 package com.goodow.realtime.operation;
 
-import com.goodow.realtime.operation.basic.NoOp;
-import com.goodow.realtime.operation.util.Pair;
-
 import elemental.json.JsonArray;
 
-public class CreateOperation implements Operation<Void> {
+public class CreateOperation extends AbstractOperation<Void> {
   public static final int TYPE = 7;
-  public static final int COLLABORATIVE_MAP = 0;
-  public static final int COLLABORATIVE_LIST = 1;
-  public static final int COLLABORATIVE_STRING = 2;
+  public static final int MAP = 0;
+  public static final int LIST = 1;
+  public static final int STRING = 2;
   public static final int INDEX_REFERENCE = 4;
-  public final int type;
-  private String id;
 
-  public CreateOperation(int type, String id) {
-    this.type = type;
-    this.id = id;
+  public static CreateOperation parse(JsonArray serialized) {
+    assert serialized.getNumber(0) == TYPE && serialized.length() == 3;
+    return new CreateOperation(parseId(serialized), (int) serialized.getNumber(2));
   }
 
-  public CreateOperation(JsonArray serialized) {
-    this((int) serialized.getNumber(2), serialized.getString(1));
+  public final int type;
+
+  public CreateOperation(String id, int type) {
+    super(id);
+    this.type = type;
   }
 
   @Override
@@ -42,52 +40,8 @@ public class CreateOperation implements Operation<Void> {
   }
 
   @Override
-  public CreateOperation composeWith(Operation<Void> op) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (!(obj instanceof CreateOperation)) {
-      return false;
-    }
-    CreateOperation other = (CreateOperation) obj;
-    if (id == null) {
-      if (other.id != null) {
-        return false;
-      }
-    } else if (!id.equals(other.id)) {
-      return false;
-    }
-    if (type != other.type) {
-      return false;
-    }
-    return true;
-  }
-
-  @Override
-  public String getId() {
-    return id;
-  }
-
-  @Override
   public int getType() {
     return TYPE;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    result = prime * result + type;
-    return result;
   }
 
   @Override
@@ -96,25 +50,12 @@ public class CreateOperation implements Operation<Void> {
   }
 
   @Override
-  public boolean isNoOp() {
-    return false;
+  public CreateOperation[] transformWith(Operation<Void> operation, boolean arrivedAfter) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
+  protected void toString(StringBuilder sb) {
     sb.append(type);
-    return sb.toString();
-  }
-
-  @Override
-  public Pair<? extends Operation<Void>, ? extends Operation<?>> transformWith(Operation<?> clientOp) {
-    assert equals(clientOp);
-    return Pair.of(NoOp.<Void> get(), NoOp.get());
   }
 }

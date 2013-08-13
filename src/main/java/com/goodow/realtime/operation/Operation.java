@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Goodow.com
+ * Copyright 2013 Goodow.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,8 +12,6 @@
  * the License.
  */
 package com.goodow.realtime.operation;
-
-import com.goodow.realtime.operation.util.Pair;
 
 /**
  * Represents an operation that can be applied to a target.
@@ -29,20 +27,19 @@ public interface Operation<T> {
    */
   void apply(T target);
 
-  Operation<T> composeWith(Operation<T> op);
-
   String getId();
 
   int getType();
 
   Operation<T> invert();
 
-  boolean isNoOp();
-
-  void setId(String id);
-
   @Override
   String toString();
 
-  Pair<? extends Operation<T>, ? extends Operation<?>> transformWith(Operation<?> clientOp);
+  /**
+   * @param op
+   * @param rigthSide Whether this operation reaches the server after {@code operation}.
+   * @return
+   */
+  Operation<T>[] transformWith(Operation<T> operation, boolean arrivedAfter);
 }

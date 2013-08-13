@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Goodow.com
+ * Copyright 2013 Goodow.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -19,8 +19,6 @@ import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
 
 public interface Transformer<O extends Operation<?>> {
-  ArrayOf<O> compose(ArrayOf<O> ops);
-
   O createOperation(JsonValue serialized, String userId, String sessionId);
 
   // OperationSink<O> createSnapshot(JsonValue serialized);

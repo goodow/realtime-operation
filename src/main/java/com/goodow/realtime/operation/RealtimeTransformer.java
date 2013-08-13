@@ -13,12 +13,10 @@
  */
 package com.goodow.realtime.operation;
 
-import com.goodow.realtime.operation.basic.NoOp;
-import com.goodow.realtime.operation.list.ArrayOp;
-import com.goodow.realtime.operation.list.StringOp;
-import com.goodow.realtime.operation.list.algorithm.ListOp;
-import com.goodow.realtime.operation.list.algorithm.ListOpCollector;
-import com.goodow.realtime.operation.map.MapOp;
+import com.goodow.realtime.operation.list.DeleteOperation;
+import com.goodow.realtime.operation.list.InsertOperation;
+import com.goodow.realtime.operation.list.ReplaceOperation;
+import com.goodow.realtime.operation.map.MapOperation;
 import com.goodow.realtime.operation.util.Pair;
 
 import elemental.json.JsonArray;
@@ -26,128 +24,82 @@ import elemental.json.JsonValue;
 import elemental.util.ArrayOf;
 import elemental.util.Collections;
 
-public class RealtimeTransformer implements Transformer<RealtimeOperation<?>> {
-  @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public ArrayOf<RealtimeOperation<?>> compose(ArrayOf<RealtimeOperation<?>> ops) {
-    if (ops.isEmpty()) {
-      return ops;
-    }
-    ArrayOf<RealtimeOperation<?>> toRtn = Collections.arrayOf();
-    RealtimeOperation<?> current = null;
-    ListOpCollector<?> collector = null;
-    for (int i = 0, len = ops.length(); i < len; i++) {
-      RealtimeOperation op = ops.get(i);
-      assert !op.isNoOp();
-      if (current == null || !op.getId().equals(current.getId())
-          || !op.sessionId.equals(current.sessionId) || !op.userId.equals(current.userId)
-          || op.getType() != current.getType()) {
-        if (collector != null) {
-          composeListOps(toRtn, collector);
-          collector = null;
-        }
-        toRtn.push(op);
-      } else {
-        assert toRtn.peek().getType() == op.getType();
-        if (op.getOp() instanceof ListOp) {
-          if (collector == null) {
-            collector = ((ListOp) op.getOp()).createOpCollector();
-            collector.add((ListOp) toRtn.peek().getOp());
-          }
-          collector.add((ListOp) op.getOp());
-        } else {
-          RealtimeOperation<?> composition = toRtn.pop().composeWith(op);
-          if (!composition.isNoOp()) {
-            toRtn.push(composition);
-          }
-        }
-      }
-      current = op;
-    }
-    if (collector != null) {
-      composeListOps(toRtn, collector);
-      collector = null;
-    }
-    return toRtn;
-  }
+public class RealtimeTransformer implements Transformer<AbstractOperation<?>> {
 
-  public Operation<?> createOp(JsonArray serialized) {
-    Operation<?> op = null;
-    String id = serialized.getString(1);
-    switch ((int) serialized.getNumber(0)) {
-      case CreateOperation.TYPE:
-        op = new CreateOperation(serialized);
-        break;
-      case MapOp.TYPE:
-        op = new MapOp(serialized.getArray(2));
-        break;
-      case StringOp.TYPE:
-        op = new StringOp(serialized.getArray(2));
-        break;
-      case ArrayOp.TYPE:
-        op = new ArrayOp(serialized.getArray(2));
-        break;
-      case ReferenceShiftedOperation.TYPE:
-        op = new ReferenceShiftedOperation(serialized.getArray(2));
-        break;
-      case NoOp.TYPE:
-        op = NoOp.get();
-        break;
-      default:
-        throw new UnsupportedOperationException("Unknow operation type: " + serialized.toJson());
-    }
-    op.setId(id);
+  @Override
+  public AbstractOperation<?> createOperation(JsonValue serialized, String userId, String sessionId) {
+    AbstractOperation<?> op = createOperation((JsonArray) serialized);
+    op.setUserAndSessionId(userId, sessionId);
     return op;
   }
 
   @Override
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public RealtimeOperation<?> createOperation(JsonValue serialized, String userId, String sessionId) {
-    Operation<?> op = createOp((JsonArray) serialized);
-    return new RealtimeOperation(op, userId, sessionId);
-  }
-
-  @Override
-  public Pair<ArrayOf<RealtimeOperation<?>>, ArrayOf<RealtimeOperation<?>>> transform(
-      ArrayOf<RealtimeOperation<?>> serverOps, ArrayOf<RealtimeOperation<?>> clientOps) {
-    ArrayOf<RealtimeOperation<?>> sOps =
-        Collections.<RealtimeOperation<?>> arrayOf().concat(serverOps);
-    ArrayOf<RealtimeOperation<?>> cOps =
-        Collections.<RealtimeOperation<?>> arrayOf().concat(clientOps);
-    sLoop : for (int i = 0; i < sOps.length(); i++) {
-      RealtimeOperation<?> serverOp = sOps.get(i);
-      assert !serverOp.isNoOp();
-      for (int j = 0; j < cOps.length(); j++) {
-        RealtimeOperation<?> clientOp = cOps.get(j);
-        assert !clientOp.isNoOp();
-        Pair<? extends RealtimeOperation<?>, ? extends RealtimeOperation<?>> pair =
-            serverOp.transformWith(clientOp);
-        serverOp = pair.first;
-        clientOp = pair.second;
-        if (clientOp.isNoOp()) {
-          cOps.removeByIndex(j--);
-        } else {
-          cOps.set(j, clientOp);
-        }
-        if (serverOp.isNoOp()) {
-          sOps.removeByIndex(i--);
-          continue sLoop;
-        }
-      }
-      sOps.set(i, serverOp);
+  public Pair<ArrayOf<AbstractOperation<?>>, ArrayOf<AbstractOperation<?>>> transform(
+      ArrayOf<AbstractOperation<?>> serverOps, ArrayOf<AbstractOperation<?>> clientOps) {
+    ArrayOf<AbstractOperation<?>> transformedClientOps = Collections.arrayOf();
+    for (int i = 0, len = clientOps.length(); i < len; i++) {
+      transform(transformedClientOps, clientOps.get(i), serverOps, 0, true);
     }
-    return Pair.of(sOps, cOps);
+    return Pair.of(serverOps, transformedClientOps);
+  }
+
+  private AbstractOperation<?> createOperation(JsonArray serialized) {
+    AbstractOperation<?> op = null;
+    switch ((int) serialized.getNumber(0)) {
+      case CreateOperation.TYPE:
+        op = CreateOperation.parse(serialized);
+        break;
+      case MapOperation.TYPE:
+        op = MapOperation.parse(serialized);
+        break;
+      case InsertOperation.TYPE:
+        op = InsertOperation.parse(serialized);
+        break;
+      case DeleteOperation.TYPE:
+        op = InsertOperation.parse(serialized);
+        break;
+      case ReplaceOperation.TYPE:
+        op = InsertOperation.parse(serialized);
+        break;
+      case ReferenceShiftedOperation.TYPE:
+        op = ReferenceShiftedOperation.parse(serialized);
+        break;
+      default:
+        throw new UnsupportedOperationException("Unknow operation type: " + serialized.toJson());
+    }
+    return op;
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private void composeListOps(ArrayOf<RealtimeOperation<?>> ops, ListOpCollector<?> collector) {
-    ListOp<?> composition = collector.composeAll();
-    if (!composition.isNoOp()) {
-      RealtimeOperation<?> peek = ops.peek();
-      composition.setId(peek.getId());
-      ops.set(ops.length() - 1, new RealtimeOperation(composition, peek.userId, peek.sessionId));
+  private void transform(ArrayOf<AbstractOperation<?>> results, AbstractOperation<?> op1,
+      ArrayOf<AbstractOperation<?>> ops2, int startIndex, boolean arrivedAfter) {
+    assert op1 != null;
+    if (startIndex == ops2.length()) {
+      results.push(op1);
+      return;
+    }
+    AbstractOperation op2 = ops2.get(startIndex);
+    assert op2 != null;
+    if (!op1.isSameId(op2)) {
+      transform(results, op1, ops2, startIndex++, arrivedAfter);
+      return;
+    }
+    AbstractOperation<?>[] transformedOps2 = op2.transformWith(op1, !arrivedAfter);
+    ops2.removeByIndex(startIndex);
+    if (transformedOps2 != null) {
+      for (AbstractOperation op : transformedOps2) {
+        op.setUserAndSessionId(op2.getUserId(), op2.getSessionId());
+        ops2.insert(startIndex++, op);
+      }
+    }
+    AbstractOperation<?>[] transformedOps1 = op1.transformWith(op2, arrivedAfter);
+    if (transformedOps1 == null) {
+      return;
     } else {
-      ops.removeByIndex(ops.length() - 1);
+      for (AbstractOperation op : transformedOps1) {
+        op.setUserAndSessionId(op1.getUserId(), op1.getSessionId());
+        transform(results, op, ops2, startIndex, arrivedAfter);
+      }
     }
   }
 }
