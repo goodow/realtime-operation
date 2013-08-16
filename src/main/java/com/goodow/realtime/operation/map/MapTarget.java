@@ -13,8 +13,6 @@
  */
 package com.goodow.realtime.operation.map;
 
-import elemental.json.JsonValue;
-
-public interface MapTarget {
-  void set(String key, JsonValue newValue);
+public interface MapTarget<T> {
+  void set(String key, T newValue);
 }

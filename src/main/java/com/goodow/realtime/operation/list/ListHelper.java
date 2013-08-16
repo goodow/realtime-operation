@@ -11,18 +11,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.goodow.realtime.operation;
+package com.goodow.realtime.operation.list;
 
-import com.goodow.realtime.operation.util.Pair;
+import elemental.json.JsonArray;
 
-import java.util.List;
+public interface ListHelper<T> {
+  int length(T values);
 
-import elemental.json.JsonValue;
+  T parse(JsonArray serialized);
 
-public interface Transformer<O extends Operation<?>> {
-  O createOperation(JsonValue serialized, String userId, String sessionId);
+  T replaceWith(T values, int startIndex, int length, T replacement);
 
-  // OperationSink<O> createSnapshot(JsonValue serialized);
+  StringBuilder serialize(T values);
 
-  Pair<List<O>, List<O>> transform(List<O> serverOps, List<O> clientOps);
+  T subset(T values, int startIndex, int length);
+
+  T subset(T values, int startIndex0, int length0, int startIndex1, int length1);
+
+  T subset(T values0, int startIndex0, int length0, T values1, int startIndex1, int length1);
 }

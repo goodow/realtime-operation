@@ -13,32 +13,41 @@
  */
 package com.goodow.realtime.operation.map;
 
+import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.map.json.JsonMapOperation;
+
 import junit.framework.TestCase;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class MapOperationTest extends TestCase {
+  private AbstractMapOperation<JsonValue> expected;
+
   public void testParseFromJson() {
-    MapOperation op = new MapOperation(null, "key", null, Json.create("abc"));
-    assertEquals(op, MapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    AbstractMapOperation<JsonValue> op =
+        new JsonMapOperation(null, "key", null, Json.create("abc"));
+    assertEquals(op, JsonMapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
 
     JsonObject obj = Json.createObject();
     obj.put("k", true);
 
-    op = new MapOperation("id", "key", Json.createNull(), obj);
-    assertEquals(op, MapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    op = new JsonMapOperation("id", "key", Json.createArray(), obj);
+    assertEquals(op, JsonMapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
 
-    op = new MapOperation("id", "key", obj, Json.createNull());
-    assertEquals(op, MapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    op = new JsonMapOperation("id", "key", obj, Json.createArray());
+    assertEquals(op, JsonMapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
   }
 
   public void testTransformDifferentKey() {
-    MapOperation op1 = new MapOperation(null, "key1", null, Json.create("abc"));
-    MapOperation op2 = new MapOperation(null, "key2", Json.create(3), Json.create(true));
+    AbstractMapOperation<JsonValue> op1 =
+        new JsonMapOperation(null, "key1", null, Json.create("abc"));
+    AbstractMapOperation<JsonValue> op2 =
+        new JsonMapOperation(null, "key2", Json.create(3), Json.create(true));
 
-    MapOperation[] transformedOp = op1.transformWith(op2, true);
+    AbstractMapOperation<JsonValue>[] transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertSame(op1, transformedOp[0]);
@@ -50,31 +59,40 @@ public class MapOperationTest extends TestCase {
   }
 
   public void testTransformNoOp() {
-    MapOperation op1 = new MapOperation(null, "key", null, Json.create("abc"));
-    MapOperation op2 = new MapOperation(null, "key", Json.create(3), Json.create("abc"));
+    AbstractMapOperation<JsonValue> op1 =
+        new JsonMapOperation(null, "key", null, Json.create("abc"));
+    AbstractMapOperation<JsonValue> op2 =
+        new JsonMapOperation(null, "key", Json.create(3), Json.create("abc"));
 
-    MapOperation[] transformedOp = op1.transformWith(op2, true);
+    AbstractMapOperation<JsonValue>[] transformedOp = op1.transformWith(op2, true);
     assertNull(transformedOp);
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
   }
 
   public void testTransformSameKey() {
-    MapOperation op1 = new MapOperation(null, "key", null, Json.create("abc"));
-    MapOperation op2 = new MapOperation(null, "key", Json.create(3), Json.create(true));
+    AbstractMapOperation<JsonValue> op1 =
+        new JsonMapOperation(null, "key", null, Json.create("abc"));
+    AbstractMapOperation<JsonValue> op2 =
+        new JsonMapOperation(null, "key", Json.create(3), Json.create(true));
 
-    MapOperation[] transformedOp = op1.transformWith(op2, true);
-    MapOperation expected = new MapOperation(null, "key", Json.create(true), Json.create("abc"));
-    assertEquals(expected, transformedOp[0]);
+    AbstractMapOperation<JsonValue>[] transformedOp = op1.transformWith(op2, true);
+    expected = new JsonMapOperation(null, "key", Json.create(true), Json.create("abc"));
+    equals(expected, transformedOp[0]);
 
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
 
     transformedOp = op2.transformWith(op1, true);
-    expected = new MapOperation(null, "key", Json.create("abc"), Json.create(true));
-    assertEquals(expected, transformedOp[0]);
+    expected = new JsonMapOperation(null, "key", Json.create("abc"), Json.create(true));
+    equals(expected, transformedOp[0]);
 
     transformedOp = op2.transformWith(op1, false);
     assertNull(transformedOp);
+  }
+
+  void equals(AbstractOperation<?> op0, AbstractOperation<?> op1) {
+    assertEquals(op0, op1);
+    assertEquals(op0.invert(), op1.invert());
   }
 }

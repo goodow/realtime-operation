@@ -13,63 +13,71 @@
  */
 package com.goodow.realtime.operation.list;
 
+import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.list.string.StringDeleteOperation;
+import com.goodow.realtime.operation.list.string.StringInsertOperation;
+import com.goodow.realtime.operation.list.string.StringReplaceOperation;
+
 import junit.framework.TestCase;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 
 public class ReplaceOperationTest extends TestCase {
+  private AbstractOperation<?> expected0;
+  private AbstractOperation<?> expected1;
+
   public void testParseFromJson() {
-    ReplaceOperation<String> op = new ReplaceOperation<String>(null, 2, "abc", "123");
-    assertEquals(op, ReplaceOperation.parse((JsonArray) Json.instance().parse(op.toString())));
-    op = new ReplaceOperation<String>("id", 0, "abcd", "true");
-    assertEquals(op, ReplaceOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    AbstractReplaceOperation<String> op = new StringReplaceOperation(null, 2, "abc", "123");
+    assertEquals(op, StringReplaceOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    op = new StringReplaceOperation("id", 0, "abcd", "true");
+    assertEquals(op, StringReplaceOperation.parse((JsonArray) Json.instance().parse(op.toString())));
   }
 
   public void testReplaceVsDelete() {
     // A's deletion spatially before B's replacement
-    ReplaceOperation<String> op1 = new ReplaceOperation<String>(null, 2, "abc", "234");
-    DeleteOperation<String> op2 = new DeleteOperation<String>(null, 0, "0");
-    ReplaceOperation<String>[] transformedOp = op1.transformWith(op2, true);
-    ReplaceOperation<String> expected = new ReplaceOperation<String>(null, 1, "abc", "234");
-    assertEquals(expected, transformedOp[0]);
+    AbstractReplaceOperation<String> op1 = new StringReplaceOperation(null, 2, "abc", "234");
+    AbstractDeleteOperation<String> op2 = new StringDeleteOperation(null, 0, "0");
+    AbstractReplaceOperation<String>[] transformedOp = op1.transformWith(op2, true);
+    expected0 = new StringReplaceOperation(null, 1, "abc", "234");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's deletion spatially adjacent to and before B's replacement
-    op2 = new DeleteOperation<String>(null, 0, "01");
+    op2 = new StringDeleteOperation(null, 0, "01");
     transformedOp = op1.transformWith(op2, true);
-    expected = new ReplaceOperation<String>(null, 0, "abc", "234");
-    assertEquals(expected, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 0, "abc", "234");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's deletion overlaps B's replacement
-    op2 = new DeleteOperation<String>(null, 1, "12");
+    op2 = new StringDeleteOperation(null, 1, "12");
     transformedOp = op1.transformWith(op2, true);
-    expected = new ReplaceOperation<String>(null, 1, "ab", "34");
-    assertEquals(expected, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 1, "bc", "34");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's deletion overlaps B's replacement
-    op2 = new DeleteOperation<String>(null, 3, "3456");
+    op2 = new StringDeleteOperation(null, 3, "3456");
     transformedOp = op1.transformWith(op2, true);
-    expected = new ReplaceOperation<String>(null, 2, "a", "2");
-    assertEquals(expected, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 2, "a", "2");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's deletion a subset of B's replacement
-    op2 = new DeleteOperation<String>(null, 3, "3");
+    op2 = new StringDeleteOperation(null, 3, "3");
     transformedOp = op1.transformWith(op2, true);
-    expected = new ReplaceOperation<String>(null, 2, "ab", "24");
-    assertEquals(expected, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 2, "ac", "24");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's deletion identical to B's replacement
-    op2 = new DeleteOperation<String>(null, 2, "234");
+    op2 = new StringDeleteOperation(null, 2, "234");
     transformedOp = op1.transformWith(op2, true);
     assertNull(transformedOp);
     transformedOp = op1.transformWith(op2, false);
@@ -78,41 +86,41 @@ public class ReplaceOperationTest extends TestCase {
 
   public void testReplaceVsInsert() {
     // A's insertion spatially before B's replacement
-    ReplaceOperation<String> op1 = new ReplaceOperation<String>(null, 3, "abc", "345");
-    InsertOperation<String> op2 = new InsertOperation<String>(null, 2, "de");
-    ReplaceOperation<String>[] transformedOp = op1.transformWith(op2, true);
-    ReplaceOperation<String> expected = new ReplaceOperation<String>(null, 5, "abc", "345");
-    assertEquals(expected, transformedOp[0]);
+    AbstractReplaceOperation<String> op1 = new StringReplaceOperation(null, 3, "abc", "345");
+    AbstractInsertOperation<String> op2 = new StringInsertOperation(null, 2, "de");
+    AbstractReplaceOperation<String>[] transformedOp = op1.transformWith(op2, true);
+    expected0 = new StringReplaceOperation(null, 5, "abc", "345");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's insertion spatially at the start of B's replacement
-    op2 = new InsertOperation<String>(null, 3, "de");
+    op2 = new StringInsertOperation(null, 3, "de");
     transformedOp = op1.transformWith(op2, true);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
+    equals(expected0, transformedOp[0]);
 
     // A's insertion spatially inside B's replacement
-    op2 = new InsertOperation<String>(null, 4, "de");
+    op2 = new StringInsertOperation(null, 4, "de");
     transformedOp = op1.transformWith(op2, true);
-    expected = new ReplaceOperation<String>(null, 3, "a", "3");
-    ReplaceOperation<String> expected2 = new ReplaceOperation<String>(null, 6, "bc", "45");
-    assertEquals(expected, transformedOp[0]);
-    assertEquals(expected2, transformedOp[1]);
+    expected0 = new StringReplaceOperation(null, 3, "a", "3");
+    expected1 = new StringReplaceOperation(null, 6, "bc", "45");
+    equals(expected0, transformedOp[0]);
+    equals(expected1, transformedOp[1]);
     transformedOp = op1.transformWith(op2, false);
-    assertEquals(expected, transformedOp[0]);
-    assertEquals(expected2, transformedOp[1]);
+    equals(expected0, transformedOp[0]);
+    equals(expected1, transformedOp[1]);
 
     // A's insertion spatially at the end of B's replacement
-    op2 = new InsertOperation<String>(null, 6, "de");
+    op2 = new StringInsertOperation(null, 6, "de");
     transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertSame(op1, transformedOp[0]);
 
     // A's insertion spatially after B's replacement
-    op2 = new InsertOperation<String>(null, 7, "de");
+    op2 = new StringInsertOperation(null, 7, "de");
     transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
@@ -121,9 +129,9 @@ public class ReplaceOperationTest extends TestCase {
 
   public void testReplaceVsReplace() {
     // A's replacement spatially before B's replacement
-    ReplaceOperation<String> op1 = new ReplaceOperation<String>(null, 2, "abc", "234");
-    ReplaceOperation<String> op2 = new ReplaceOperation<String>(null, 6, "a", "6");
-    ReplaceOperation<String>[] transformedOp = op1.transformWith(op2, true);
+    AbstractReplaceOperation<String> op1 = new StringReplaceOperation(null, 2, "abc", "234");
+    AbstractReplaceOperation<String> op2 = new StringReplaceOperation(null, 6, "a", "6");
+    AbstractReplaceOperation<String>[] transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertSame(op1, transformedOp[0]);
@@ -134,7 +142,7 @@ public class ReplaceOperationTest extends TestCase {
     assertSame(op2, transformedOp[0]);
 
     // A's replacement spatially adjacent to and before B's replacement
-    op2 = new ReplaceOperation<String>(null, 5, "ab", "56");
+    op2 = new StringReplaceOperation(null, 5, "ab", "56");
     transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
@@ -146,39 +154,49 @@ public class ReplaceOperationTest extends TestCase {
     assertSame(op2, transformedOp[0]);
 
     // A's replacement overlaps B's replacement
-    op2 = new ReplaceOperation<String>(null, 3, "abcd", "3456");
+    op2 = new StringReplaceOperation(null, 3, "abcd", "3456");
     transformedOp = op1.transformWith(op2, true);
-    assertSame(op1, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 2, "a34", "234");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
-    ReplaceOperation<String> expected = new ReplaceOperation<String>(null, 2, "a", "2");
-    assertEquals(expected, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 2, "a", "2");
+    equals(expected0, transformedOp[0]);
 
     transformedOp = op2.transformWith(op1, true);
-    assertSame(op2, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 3, "34cd", "3456");
+    equals(expected0, transformedOp[0]);
     transformedOp = op2.transformWith(op1, false);
-    expected = new ReplaceOperation<String>(null, 5, "ab", "56");
-    assertEquals(expected, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 5, "cd", "56");
+    equals(expected0, transformedOp[0]);
 
     // A's replacement a subset of B's replacement
-    op2 = new ReplaceOperation<String>(null, 1, "abcdef", "123456");
+    op2 = new StringReplaceOperation(null, 1, "abcdef", "123456");
     transformedOp = op1.transformWith(op2, true);
-    assertSame(op1, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 2, "234", "234");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
 
     transformedOp = op2.transformWith(op1, true);
-    assertSame(op2, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 1, "a234ef", "123456");
+    equals(expected0, transformedOp[0]);
     transformedOp = op2.transformWith(op1, false);
-    expected = new ReplaceOperation<String>(null, 1, "a", "1");
-    ReplaceOperation<String> expected1 = new ReplaceOperation<String>(null, 5, "ab", "56");
-    assertEquals(expected, transformedOp[0]);
-    assertEquals(expected1, transformedOp[1]);
+    expected0 = new StringReplaceOperation(null, 1, "a", "1");
+    expected1 = new StringReplaceOperation(null, 5, "ef", "56");
+    equals(expected0, transformedOp[0]);
+    equals(expected1, transformedOp[1]);
 
     // A's replacement identical to B's replacement
-    op2 = new ReplaceOperation<String>(null, 2, "abc", "234");
+    op2 = new StringReplaceOperation(null, 2, "abc", "234");
     transformedOp = op1.transformWith(op2, true);
-    assertSame(op1, transformedOp[0]);
+    expected0 = new StringReplaceOperation(null, 2, "234", "234");
+    equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
+  }
+
+  void equals(AbstractOperation<?> op0, AbstractOperation<?> op1) {
+    assertEquals(op0, op1);
+    assertEquals(op0.invert(), op1.invert());
   }
 }

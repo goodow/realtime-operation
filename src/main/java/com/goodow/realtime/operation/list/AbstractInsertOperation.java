@@ -15,19 +15,11 @@ package com.goodow.realtime.operation.list;
 
 import com.goodow.realtime.operation.Operation;
 
-import elemental.json.JsonArray;
-
-public class InsertOperation<T> extends AbstractListOperation<T> {
+public abstract class AbstractInsertOperation<T> extends AbstractListOperation<T> {
   public static final int TYPE = 5;
 
-  public static <T> InsertOperation<T> parse(JsonArray serialized) {
-    assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    T values = parseValues(serialized.getArray(3));
-    return new InsertOperation<T>(parseId(serialized), (int) serialized.getNumber(2), values);
-  }
-
-  public InsertOperation(String id, int startIndex, T values) {
-    super(id, startIndex, values, length(values));
+  protected AbstractInsertOperation(String id, int startIndex, T values) {
+    super(id, startIndex, values, -1);
   }
 
   @Override
@@ -41,11 +33,6 @@ public class InsertOperation<T> extends AbstractListOperation<T> {
   }
 
   @Override
-  public Operation<ListTarget<T>> invert() {
-    return new DeleteOperation<T>(id, startIndex, values);
-  }
-
-  @Override
   public int transformIndexReference(int index, boolean rigthSide, boolean canBeDeleted) {
     if (rigthSide ? startIndex <= index : startIndex < index) {
       return index + length;
@@ -55,11 +42,14 @@ public class InsertOperation<T> extends AbstractListOperation<T> {
 
   @SuppressWarnings("unchecked")
   @Override
-  public InsertOperation<T>[] transformWith(Operation<ListTarget<T>> operation, boolean arrivedAfter) {
+  public AbstractInsertOperation<T>[] transformWith(Operation<ListTarget<T>> operation,
+      boolean arrivedAfter) {
     assert isSameId(operation) && operation instanceof AbstractListOperation;
     AbstractListOperation<T> op = (AbstractListOperation<T>) operation;
     int transformedStart = op.transformIndexReference(startIndex, arrivedAfter, false);
-    return transformedStart == startIndex ? new InsertOperation[] {this}
-        : new InsertOperation[] {new InsertOperation<T>(id, transformedStart, values)};
+    return transformedStart == startIndex ? new AbstractInsertOperation[] {this}
+        : new AbstractInsertOperation[] {create(transformedStart, values)};
   }
+
+  protected abstract AbstractInsertOperation<T> create(int startIndex, T values);
 }

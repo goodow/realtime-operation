@@ -55,6 +55,9 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return result;
   }
 
+  @Override
+  public abstract AbstractOperation<T> invert();
+
   public void setUserAndSessionId(String userId, String sessionId) {
     this.userId = userId;
     this.sessionId = sessionId;

@@ -50,7 +50,7 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  public Operation<Void> invert() {
+  public ReferenceShiftedOperation invert() {
     return new ReferenceShiftedOperation(id, referencedObjectId, oldIndex, canBeDeleted, newIndex);
   }
 

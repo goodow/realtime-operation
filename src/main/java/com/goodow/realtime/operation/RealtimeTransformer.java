@@ -13,16 +13,25 @@
  */
 package com.goodow.realtime.operation;
 
-import com.goodow.realtime.operation.list.DeleteOperation;
-import com.goodow.realtime.operation.list.InsertOperation;
-import com.goodow.realtime.operation.list.ReplaceOperation;
-import com.goodow.realtime.operation.map.MapOperation;
+import com.goodow.realtime.operation.list.AbstractDeleteOperation;
+import com.goodow.realtime.operation.list.AbstractInsertOperation;
+import com.goodow.realtime.operation.list.AbstractReplaceOperation;
+import com.goodow.realtime.operation.list.json.JsonDeleteOperation;
+import com.goodow.realtime.operation.list.json.JsonHelper;
+import com.goodow.realtime.operation.list.json.JsonInsertOperation;
+import com.goodow.realtime.operation.list.json.JsonReplaceOperation;
+import com.goodow.realtime.operation.list.string.StringDeleteOperation;
+import com.goodow.realtime.operation.list.string.StringHelper;
+import com.goodow.realtime.operation.list.string.StringInsertOperation;
+import com.goodow.realtime.operation.map.AbstractMapOperation;
+import com.goodow.realtime.operation.map.json.JsonMapOperation;
 import com.goodow.realtime.operation.util.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
-import elemental.util.ArrayOf;
-import elemental.util.Collections;
 
 public class RealtimeTransformer implements Transformer<AbstractOperation<?>> {
 
@@ -33,49 +42,18 @@ public class RealtimeTransformer implements Transformer<AbstractOperation<?>> {
     return op;
   }
 
-  @Override
-  public Pair<ArrayOf<AbstractOperation<?>>, ArrayOf<AbstractOperation<?>>> transform(
-      ArrayOf<AbstractOperation<?>> serverOps, ArrayOf<AbstractOperation<?>> clientOps) {
-    ArrayOf<AbstractOperation<?>> transformedClientOps = Collections.arrayOf();
-    for (int i = 0, len = clientOps.length(); i < len; i++) {
-      transform(transformedClientOps, clientOps.get(i), serverOps, 0, true);
-    }
-    return Pair.of(serverOps, transformedClientOps);
-  }
-
-  private AbstractOperation<?> createOperation(JsonArray serialized) {
-    AbstractOperation<?> op = null;
-    switch ((int) serialized.getNumber(0)) {
-      case CreateOperation.TYPE:
-        op = CreateOperation.parse(serialized);
-        break;
-      case MapOperation.TYPE:
-        op = MapOperation.parse(serialized);
-        break;
-      case InsertOperation.TYPE:
-        op = InsertOperation.parse(serialized);
-        break;
-      case DeleteOperation.TYPE:
-        op = InsertOperation.parse(serialized);
-        break;
-      case ReplaceOperation.TYPE:
-        op = InsertOperation.parse(serialized);
-        break;
-      case ReferenceShiftedOperation.TYPE:
-        op = ReferenceShiftedOperation.parse(serialized);
-        break;
-      default:
-        throw new UnsupportedOperationException("Unknow operation type: " + serialized.toJson());
-    }
-    return op;
+  public AbstractOperation<?> invert(AbstractOperation<?> operation) {
+    AbstractOperation<?> invertOp = operation.invert();
+    invertOp.setUserAndSessionId(operation.getUserId(), operation.getSessionId());
+    return invertOp;
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private void transform(ArrayOf<AbstractOperation<?>> results, AbstractOperation<?> op1,
-      ArrayOf<AbstractOperation<?>> ops2, int startIndex, boolean arrivedAfter) {
+  public void transform(List<AbstractOperation<?>> results, AbstractOperation<?> op1,
+      List<AbstractOperation<?>> ops2, int startIndex, boolean arrivedAfter) {
     assert op1 != null;
-    if (startIndex == ops2.length()) {
-      results.push(op1);
+    if (startIndex == ops2.size()) {
+      results.add(op1);
       return;
     }
     AbstractOperation op2 = ops2.get(startIndex);
@@ -85,11 +63,11 @@ public class RealtimeTransformer implements Transformer<AbstractOperation<?>> {
       return;
     }
     AbstractOperation<?>[] transformedOps2 = op2.transformWith(op1, !arrivedAfter);
-    ops2.removeByIndex(startIndex);
+    ops2.remove(startIndex);
     if (transformedOps2 != null) {
       for (AbstractOperation op : transformedOps2) {
         op.setUserAndSessionId(op2.getUserId(), op2.getSessionId());
-        ops2.insert(startIndex++, op);
+        ops2.add(startIndex++, op);
       }
     }
     AbstractOperation<?>[] transformedOps1 = op1.transformWith(op2, arrivedAfter);
@@ -101,5 +79,60 @@ public class RealtimeTransformer implements Transformer<AbstractOperation<?>> {
         transform(results, op, ops2, startIndex, arrivedAfter);
       }
     }
+  }
+
+  @Override
+  public Pair<List<AbstractOperation<?>>, List<AbstractOperation<?>>> transform(
+      List<AbstractOperation<?>> serverOps, List<AbstractOperation<?>> clientOps) {
+    List<AbstractOperation<?>> transformedClientOps = new ArrayList<AbstractOperation<?>>();
+    for (AbstractOperation<?> clientOp : clientOps) {
+      transform(transformedClientOps, clientOp, serverOps, 0, true);
+    }
+    return Pair.of(serverOps, transformedClientOps);
+  }
+
+  private AbstractOperation<?> createOperation(JsonArray serialized) {
+    AbstractOperation<?> op = null;
+    switch ((int) serialized.getNumber(0)) {
+      case CreateOperation.TYPE:
+        op = CreateOperation.parse(serialized);
+        break;
+      case AbstractMapOperation.TYPE:
+        op = JsonMapOperation.parse(serialized);
+        break;
+      case AbstractInsertOperation.TYPE:
+        switch ((int) serialized.getArray(3).getNumber(0)) {
+          case JsonHelper.TYPE:
+            op = JsonInsertOperation.parse(serialized);
+            break;
+          case StringHelper.TYPE:
+            op = StringInsertOperation.parse(serialized);
+            break;
+          default:
+            throw new UnsupportedOperationException("Unknow insert operation sub-type: "
+                + serialized.toJson());
+        }
+      case AbstractDeleteOperation.TYPE:
+        switch ((int) serialized.getArray(3).getNumber(0)) {
+          case JsonHelper.TYPE:
+            op = JsonDeleteOperation.parse(serialized);
+            break;
+          case StringHelper.TYPE:
+            op = StringDeleteOperation.parse(serialized);
+            break;
+          default:
+            throw new UnsupportedOperationException("Unknow delete operation sub-type: "
+                + serialized.toJson());
+        }
+      case AbstractReplaceOperation.TYPE:
+        op = JsonReplaceOperation.parse(serialized);
+        break;
+      case ReferenceShiftedOperation.TYPE:
+        op = ReferenceShiftedOperation.parse(serialized);
+        break;
+      default:
+        throw new UnsupportedOperationException("Unknow operation type: " + serialized.toJson());
+    }
+    return op;
   }
 }
