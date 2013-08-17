@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Goodow.com
+ * Copyright 2013 Goodow.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,6 +13,8 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.operation.create.CreateOperation;
+import com.goodow.realtime.operation.cursor.ReferenceShiftedOperation;
 import com.goodow.realtime.operation.list.AbstractDeleteOperation;
 import com.goodow.realtime.operation.list.AbstractInsertOperation;
 import com.goodow.realtime.operation.list.AbstractReplaceOperation;
@@ -28,67 +30,63 @@ import com.goodow.realtime.operation.map.json.JsonMapOperation;
 import com.goodow.realtime.operation.util.Pair;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
-public class RealtimeTransformer implements Transformer<AbstractOperation<?>> {
+public class TransformerImpl<T extends Operation<?>> implements Transformer<T> {
 
   @Override
-  public AbstractOperation<?> createOperation(JsonValue serialized, String userId, String sessionId) {
+  public T createOperation(JsonValue serialized) {
     AbstractOperation<?> op = createOperation((JsonArray) serialized);
-    op.setUserAndSessionId(userId, sessionId);
-    return op;
+    return (T) op;
   }
 
-  public AbstractOperation<?> invert(AbstractOperation<?> operation) {
-    AbstractOperation<?> invertOp = operation.invert();
-    invertOp.setUserAndSessionId(operation.getUserId(), operation.getSessionId());
-    return invertOp;
+  @Override
+  public Pair<List<T>, List<T>> transform(List<T> clientOps, List<T> serverOps) {
+    List<T> transformedClientOps = new ArrayList<T>();
+    List<T> transformedServerOps = new LinkedList<T>(serverOps);
+    for (T clientOp : clientOps) {
+      transform(transformedClientOps, clientOp, transformedServerOps, 0, true);
+    }
+    return Pair.of(transformedClientOps, transformedServerOps);
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public void transform(List<AbstractOperation<?>> results, AbstractOperation<?> op1,
-      List<AbstractOperation<?>> ops2, int startIndex, boolean arrivedAfter) {
+  public void transform(List<T> results, T operation, List<T> operations, int startIndex,
+      boolean arrivedAfter) {
+    assert operation != null;
+    if (startIndex == operations.size()) {
+      results.add(operation);
+      return;
+    }
+    @SuppressWarnings("rawtypes")
+    Operation op1 = operations.get(startIndex);
     assert op1 != null;
-    if (startIndex == ops2.size()) {
-      results.add(op1);
+    if (operation instanceof AbstractOperation
+        && !((AbstractOperation<?>) operation).isSameId((AbstractOperation<?>) op1)) {
+      transform(results, operation, operations, ++startIndex, arrivedAfter);
       return;
     }
-    AbstractOperation op2 = ops2.get(startIndex);
-    assert op2 != null;
-    if (!op1.isSameId(op2)) {
-      transform(results, op1, ops2, startIndex++, arrivedAfter);
-      return;
-    }
-    AbstractOperation<?>[] transformedOps2 = op2.transformWith(op1, !arrivedAfter);
-    ops2.remove(startIndex);
-    if (transformedOps2 != null) {
-      for (AbstractOperation op : transformedOps2) {
-        op.setUserAndSessionId(op2.getUserId(), op2.getSessionId());
-        ops2.add(startIndex++, op);
+    @SuppressWarnings("unchecked")
+    Pair<T[], T[]> pair =
+        arrivedAfter ? operation.transformWith(op1) : op1.transformWith(operation);
+    T[] transformedOps1 = arrivedAfter ? pair.second : pair.first;
+    operations.remove(startIndex);
+    if (transformedOps1 != null) {
+      for (T op : transformedOps1) {
+        operations.add(startIndex++, op);
       }
     }
-    AbstractOperation<?>[] transformedOps1 = op1.transformWith(op2, arrivedAfter);
-    if (transformedOps1 == null) {
+    T[] transformedOps0 = arrivedAfter ? pair.first : pair.second;
+    if (transformedOps0 == null) {
       return;
     } else {
-      for (AbstractOperation op : transformedOps1) {
-        op.setUserAndSessionId(op1.getUserId(), op1.getSessionId());
-        transform(results, op, ops2, startIndex, arrivedAfter);
+      for (T op : transformedOps0) {
+        transform(results, op, operations, startIndex, arrivedAfter);
       }
     }
-  }
-
-  @Override
-  public Pair<List<AbstractOperation<?>>, List<AbstractOperation<?>>> transform(
-      List<AbstractOperation<?>> serverOps, List<AbstractOperation<?>> clientOps) {
-    List<AbstractOperation<?>> transformedClientOps = new ArrayList<AbstractOperation<?>>();
-    for (AbstractOperation<?> clientOp : clientOps) {
-      transform(transformedClientOps, clientOp, serverOps, 0, true);
-    }
-    return Pair.of(serverOps, transformedClientOps);
   }
 
   private AbstractOperation<?> createOperation(JsonArray serialized) {

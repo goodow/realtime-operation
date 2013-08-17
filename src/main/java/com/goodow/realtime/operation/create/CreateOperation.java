@@ -11,7 +11,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.goodow.realtime.operation;
+package com.goodow.realtime.operation.create;
+
+import com.goodow.realtime.operation.AbstractOperation;
 
 import elemental.json.JsonArray;
 
@@ -50,7 +52,7 @@ public class CreateOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  public CreateOperation[] transformWith(Operation<Void> operation, boolean arrivedAfter) {
+  public CreateOperation[] transformWith(AbstractOperation<Void> operation, boolean arrivedAfter) {
     throw new UnsupportedOperationException();
   }
 

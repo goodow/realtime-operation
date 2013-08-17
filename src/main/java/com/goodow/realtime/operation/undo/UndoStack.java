@@ -79,7 +79,7 @@ final class UndoStack<T> {
       index = popOne(transformedClientOps);
     } while (ops.get(index - 1) != null);
     ops.remove(index - 1);
-    return Pair.of(ops.subList(index - 1, ops.size()), transformedClientOps);
+    return Pair.of(transformedClientOps, ops.subList(index - 1, ops.size()));
   }
 
   /**

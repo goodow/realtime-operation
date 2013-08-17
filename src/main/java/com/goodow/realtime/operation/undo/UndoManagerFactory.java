@@ -13,8 +13,8 @@
  */
 package com.goodow.realtime.operation.undo;
 
-import com.goodow.realtime.operation.AbstractOperation;
-import com.goodow.realtime.operation.RealtimeTransformer;
+import com.goodow.realtime.operation.RealtimeOperation;
+import com.goodow.realtime.operation.TransformerImpl;
 
 import java.util.List;
 
@@ -23,18 +23,18 @@ import java.util.List;
  */
 public final class UndoManagerFactory {
 
-  private static final UndoManagerImpl.Algorithms<AbstractOperation<?>> algorithms =
-      new UndoManagerImpl.Algorithms<AbstractOperation<?>>() {
-        RealtimeTransformer transformer = new RealtimeTransformer();
+  private static final UndoManagerImpl.Algorithms<RealtimeOperation> algorithms =
+      new UndoManagerImpl.Algorithms<RealtimeOperation>() {
+        TransformerImpl<RealtimeOperation> transformer = new TransformerImpl<RealtimeOperation>();
 
         @Override
-        public AbstractOperation<?> invert(AbstractOperation<?> operation) {
-          return transformer.invert(operation);
+        public RealtimeOperation invert(RealtimeOperation operation) {
+          return operation.invert();
         }
 
         @Override
-        public void transform(List<AbstractOperation<?>> results, AbstractOperation<?> clientOp,
-            List<AbstractOperation<?>> serverOps, int startIndex) {
+        public void transform(List<RealtimeOperation> results, RealtimeOperation clientOp,
+            List<RealtimeOperation> serverOps, int startIndex) {
           transformer.transform(results, clientOp, serverOps, startIndex, true);
         }
       };
@@ -44,8 +44,8 @@ public final class UndoManagerFactory {
    * 
    * @return A new undo manager.
    */
-  public static UndoManagerPlus<AbstractOperation<?>> createUndoManager() {
-    return new UndoManagerImpl<AbstractOperation<?>>(algorithms);
+  public static UndoManagerPlus<RealtimeOperation> createUndoManager() {
+    return new UndoManagerImpl<RealtimeOperation>(algorithms);
   }
 
 }

@@ -13,6 +13,8 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.operation.util.Pair;
+
 /**
  * Represents an operation that can be applied to a target.
  * 
@@ -27,19 +29,11 @@ public interface Operation<T> {
    */
   void apply(T target);
 
-  String getId();
-
-  int getType();
-
   Operation<T> invert();
 
   @Override
   String toString();
 
-  /**
-   * @param op
-   * @param rigthSide Whether this operation reaches the server after {@code operation}.
-   * @return
-   */
-  Operation<T>[] transformWith(Operation<T> operation, boolean arrivedAfter);
+  Pair<? extends Operation<T>[], ? extends Operation<T>[]> transformWith(
+      Operation<T> serverOperation);
 }

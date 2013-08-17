@@ -13,7 +13,7 @@
  */
 package com.goodow.realtime.operation.list;
 
-import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.AbstractOperation;
 
 public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<T> {
   public static final int TYPE = 11;
@@ -43,9 +43,9 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
 
   @Override
   @SuppressWarnings("unchecked")
-  public AbstractReplaceOperation<T>[] transformWith(Operation<ListTarget<T>> operation,
+  public AbstractReplaceOperation<T>[] transformWith(AbstractOperation<ListTarget<T>> operation,
       boolean arrivedAfter) {
-    assert isSameId(operation) && operation instanceof AbstractListOperation;
+    assert operation instanceof AbstractListOperation && isSameId(operation);
     AbstractListOperation<T> op = (AbstractListOperation<T>) operation;
     int endIndex0 = startIndex + length;
     int endIndex1 = op.startIndex + op.length;

@@ -23,75 +23,70 @@ import com.goodow.realtime.operation.util.Pair;
 
 import junit.framework.TestCase;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 
-public class RealtimeTransformerTest extends TestCase {
-  RealtimeTransformer transformer = new RealtimeTransformer();
+public class TransformerTest extends TestCase {
+  Transformer<AbstractOperation<?>> transformer = new TransformerImpl<AbstractOperation<?>>();
 
   public void testTransformClientOpToMultipleOps() {
-    AbstractInsertOperation<String> serverOp0 = new StringInsertOperation(null, 3, "ab");
-    AbstractReplaceOperation<String> serverOp1 = new StringReplaceOperation(null, 3, "abc", "def");
     AbstractReplaceOperation<String> clientOp0 = new StringReplaceOperation(null, 2, "abc", "234");
     AbstractDeleteOperation<String> clientOp1 = new StringDeleteOperation(null, 2, "234");
-    List<AbstractOperation<?>> serverOps = new LinkedList<AbstractOperation<?>>();
-    List<AbstractOperation<?>> clientOps = new ArrayList<AbstractOperation<?>>();
-    serverOps.add(serverOp0);
-    serverOps.add(serverOp1);
-    clientOps.add(clientOp0);
-    clientOps.add(clientOp1);
+    AbstractInsertOperation<String> serverOp0 = new StringInsertOperation(null, 3, "ab");
+    AbstractReplaceOperation<String> serverOp1 = new StringReplaceOperation(null, 3, "abc", "def");
+    List<AbstractOperation<?>> clientOps =
+        Arrays.<AbstractOperation<?>> asList(clientOp0, clientOp1);
+    List<AbstractOperation<?>> serverOps =
+        Arrays.<AbstractOperation<?>> asList(serverOp0, serverOp1);
     Pair<List<AbstractOperation<?>>, List<AbstractOperation<?>>> pair =
-        transformer.transform(serverOps, clientOps);
+        transformer.transform(clientOps, serverOps);
     AbstractOperation<?> expected;
 
-    assertEquals(4, pair.second.size());
+    assertEquals(4, pair.first.size());
     expected = new StringReplaceOperation(null, 2, "a", "2");
-    equals(expected, pair.second.get(0));
-    expected = new StringReplaceOperation(null, 5, "fc", "34");
-    equals(expected, pair.second.get(1));
-    expected = new StringDeleteOperation(null, 2, "2");
-    equals(expected, pair.second.get(2));
-    expected = new StringDeleteOperation(null, 4, "34");
-    equals(expected, pair.second.get(3));
-
-    assertEquals(2, pair.first.size());
-    expected = new StringInsertOperation(null, 2, "ab");
     equals(expected, pair.first.get(0));
-    expected = new StringReplaceOperation(null, 2, "ab", "de");
+    expected = new StringReplaceOperation(null, 5, "fc", "34");
     equals(expected, pair.first.get(1));
-  }
-
-  public void testTransformServerOpToMultipleOps() {
-    AbstractReplaceOperation<String> serverOp0 = new StringReplaceOperation(null, 2, "abc", "234");
-    AbstractDeleteOperation<String> serverOp1 = new StringDeleteOperation(null, 2, "234");
-    AbstractInsertOperation<String> clientOp0 = new StringInsertOperation(null, 3, "ab");
-    AbstractReplaceOperation<String> clientOp1 = new StringReplaceOperation(null, 3, "abc", "def");
-    List<AbstractOperation<?>> serverOps = new LinkedList<AbstractOperation<?>>();
-    List<AbstractOperation<?>> clientOps = new ArrayList<AbstractOperation<?>>();
-    serverOps.add(serverOp0);
-    serverOps.add(serverOp1);
-    clientOps.add(clientOp0);
-    clientOps.add(clientOp1);
-    Pair<List<AbstractOperation<?>>, List<AbstractOperation<?>>> pair =
-        transformer.transform(serverOps, clientOps);
-    AbstractOperation<?> expected;
+    expected = new StringDeleteOperation(null, 2, "2");
+    equals(expected, pair.first.get(2));
+    expected = new StringDeleteOperation(null, 4, "34");
+    equals(expected, pair.first.get(3));
 
     assertEquals(2, pair.second.size());
     expected = new StringInsertOperation(null, 2, "ab");
     equals(expected, pair.second.get(0));
     expected = new StringReplaceOperation(null, 2, "ab", "de");
     equals(expected, pair.second.get(1));
+  }
 
-    assertEquals(4, pair.first.size());
-    expected = new StringReplaceOperation(null, 2, "a", "2");
+  public void testTransformServerOpToMultipleOps() {
+    AbstractInsertOperation<String> clientOp0 = new StringInsertOperation(null, 3, "ab");
+    AbstractReplaceOperation<String> clientOp1 = new StringReplaceOperation(null, 3, "abc", "def");
+    AbstractReplaceOperation<String> serverOp0 = new StringReplaceOperation(null, 2, "abc", "234");
+    AbstractDeleteOperation<String> serverOp1 = new StringDeleteOperation(null, 2, "234");
+    List<AbstractOperation<?>> serverOps =
+        Arrays.<AbstractOperation<?>> asList(serverOp0, serverOp1);
+    List<AbstractOperation<?>> clientOps =
+        Arrays.<AbstractOperation<?>> asList(clientOp0, clientOp1);
+    Pair<List<AbstractOperation<?>>, List<AbstractOperation<?>>> pair =
+        transformer.transform(clientOps, serverOps);
+    AbstractOperation<?> expected;
+
+    assertEquals(2, pair.first.size());
+    expected = new StringInsertOperation(null, 2, "ab");
     equals(expected, pair.first.get(0));
-    expected = new StringReplaceOperation(null, 6, "c", "4");
+    expected = new StringReplaceOperation(null, 2, "ab", "de");
     equals(expected, pair.first.get(1));
+
+    assertEquals(4, pair.second.size());
+    expected = new StringReplaceOperation(null, 2, "a", "2");
+    equals(expected, pair.second.get(0));
+    expected = new StringReplaceOperation(null, 6, "c", "4");
+    equals(expected, pair.second.get(1));
     expected = new StringDeleteOperation(null, 2, "2");
-    equals(expected, pair.first.get(2));
+    equals(expected, pair.second.get(2));
     expected = new StringDeleteOperation(null, 4, "f4");
-    equals(expected, pair.first.get(3));
+    equals(expected, pair.second.get(3));
 
   }
 

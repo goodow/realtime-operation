@@ -19,10 +19,10 @@ import java.util.List;
 
 import elemental.json.JsonValue;
 
-public interface Transformer<O extends Operation<?>> {
-  O createOperation(JsonValue serialized, String userId, String sessionId);
+public interface Transformer<T> {
+  T createOperation(JsonValue serialized);
 
   // OperationSink<O> createSnapshot(JsonValue serialized);
 
-  Pair<List<O>, List<O>> transform(List<O> serverOps, List<O> clientOps);
+  Pair<List<T>, List<T>> transform(List<T> clientOps, List<T> serverOps);
 }

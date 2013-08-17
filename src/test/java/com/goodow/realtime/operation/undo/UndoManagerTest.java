@@ -13,26 +13,85 @@
  */
 package com.goodow.realtime.operation.undo;
 
-import com.goodow.realtime.operation.AbstractOperation;
-import com.goodow.realtime.operation.list.AbstractDeleteOperation;
-import com.goodow.realtime.operation.list.AbstractInsertOperation;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.RealtimeOperation;
 import com.goodow.realtime.operation.list.string.StringDeleteOperation;
 import com.goodow.realtime.operation.list.string.StringInsertOperation;
+import com.goodow.realtime.operation.util.Pair;
 
 import junit.framework.TestCase;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class UndoManagerTest extends TestCase {
-  private static AbstractDeleteOperation<String> delete(int location, String text) {
-    return new StringDeleteOperation(null, location, text);
+  private static RealtimeOperation delete(int startIndex, String text) {
+    return new RealtimeOperation("userId", null, Arrays.asList(new StringDeleteOperation(null,
+        startIndex, text)));
   }
 
-  private static AbstractInsertOperation<String> insert(int location, String text) {
-    return new StringInsertOperation(null, location, text);
+  private static RealtimeOperation delete(String id, int startIndex) {
+    return new RealtimeOperation("userId", null, Arrays.asList(new StringDeleteOperation(id,
+        startIndex, "a")));
   }
 
-  UndoManagerPlus<AbstractOperation<?>> undoManager = UndoManagerFactory.createUndoManager();
+  private static RealtimeOperation insert(int startIndex, String text) {
+    return new RealtimeOperation("userId", null, Arrays.asList(new StringInsertOperation(null,
+        startIndex, text)));
+  }
+
+  private static RealtimeOperation insert(String id, int startIndex) {
+    return new RealtimeOperation("userId", null, Arrays.asList(new StringInsertOperation(id,
+        startIndex, "a")));
+  }
+
+  UndoManagerPlus<RealtimeOperation> undoManager = UndoManagerFactory.createUndoManager();
+
+  public void testPlusMethods() {
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert(3, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert(8, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    undoManager.undoableOp(insert(2, "a"));
+    undoManager.nonUndoableOp(insert(10, "a"));
+    undoManager.undoableOp(insert(6, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    undoManager.undoableOp(delete(13, "a"));
+    undoManager.undoableOp(delete(3, "a"));
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert(4, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    Pair<List<RealtimeOperation>, List<RealtimeOperation>> pair = undoManager.undoPlus();
+    equal(pair.first, delete(5, "a"));
+    equal(pair.second, insert(1, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    pair = undoManager.undoPlus();
+    // equal(pair.first, delete(8, "a"));
+
+    equal(pair.second, insert(1, "a"), insert(9, "a"), insert(1, "a"), insert(1, "a"), insert(1,
+        "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    pair = undoManager.undoPlus();
+    equal(pair.first, delete(9, "a"));
+    equal(pair.second, insert(1, "a"), insert(1, "a"), insert(8, "a"), insert(1, "a"), insert(1,
+        "a"), insert(1, "a"), insert(1, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    pair = undoManager.redoPlus();
+    equal(pair.first, insert(10, "a"));
+    equal(pair.second, insert(1, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    pair = undoManager.redoPlus();
+    // equal(pair.first, insert(11, "a"));
+
+    equal(pair.second, insert(1, "a"), insert(1, "a"), insert(1, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    pair = undoManager.redoPlus();
+    equal(pair.first, insert(10, "a"));
+    equal(pair.second, insert(1, "a"), insert(1, "a"), insert(1, "a"), insert(1, "a"), insert(1,
+        "a"));
+  }
 
   public void testUndoRedo() {
     undoManager.checkpoint();
@@ -75,6 +134,43 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert(10, "a"));
   }
 
+  public void testUndoRedoInvolvingMultipleObjects() {
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert("i", 3));
+    undoManager.undoableOp(insert("j", 5));
+    undoManager.nonUndoableOp(insert("i", 1));
+    undoManager.nonUndoableOp(insert("j", 1));
+    undoManager.nonUndoableOp(insert("k", 1));
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert("i", 8));
+    undoManager.undoableOp(insert("j", 5));
+    undoManager.nonUndoableOp(insert("i", 1));
+    undoManager.undoableOp(insert("i", 2));
+    undoManager.nonUndoableOp(insert("i", 10));
+    undoManager.undoableOp(insert("i", 6));
+    undoManager.nonUndoableOp(insert("i", 1));
+    undoManager.undoableOp(delete("i", 13));
+    undoManager.undoableOp(delete("i", 3));
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert("i", 4));
+    undoManager.nonUndoableOp(insert("i", 1));
+    equal(undoManager.undo(), delete("i", 5));
+    undoManager.nonUndoableOp(insert("i", 1));
+    // equal(undo, delete("i", 8), delete("j", 5));
+    List<RealtimeOperation> undo = undoManager.undo();
+
+    undoManager.nonUndoableOp(insert("i", 1));
+    equal(undoManager.undo(), delete("j", 6), delete("i", 9));
+    undoManager.nonUndoableOp(insert("i", 1));
+    equal(undoManager.redo(), insert("i", 10), insert("j", 6));
+    undoManager.nonUndoableOp(insert("i", 1));
+    // equal(undoManager.redo(), insert("i", 11), insert("j", 5));
+    List<RealtimeOperation> redo = undoManager.redo();
+
+    undoManager.nonUndoableOp(insert("i", 1));
+    equal(undoManager.redo(), insert("i", 10));
+  }
+
   public void testUndoRedoWithConsecutiveNonundoableOps() {
     undoManager.checkpoint();
     undoManager.undoableOp(insert(3, "a"));
@@ -114,10 +210,47 @@ public class UndoManagerTest extends TestCase {
     undoManager.nonUndoableOp(insert(1, "a"));
     equal(undoManager.undo(), delete(5, "a"));
     // equal(undoManager.undo(), delete(7, "a"));
-    // equal(undoManager.undo(), delete(7, "a"));
+    List<RealtimeOperation> undo = undoManager.undo();
+
+    equal(undoManager.undo(), delete(7, "a"));
+    equal(undoManager.redo(), insert(7, "a"));
     // equal(undoManager.redo(), insert(7, "a"));
-    // equal(undoManager.redo(), insert(7, "a"));
-    // equal(undoManager.redo(), insert(5, "a"));
+    List<RealtimeOperation> redo = undoManager.redo();
+
+    equal(undoManager.redo(), insert(5, "a"));
+  }
+
+  public void testUndoRedoWithNondenseCheckpointsInterspersedWithNonundoableOps() {
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert(3, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert(8, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    undoManager.undoableOp(insert(2, "a"));
+    undoManager.nonUndoableOp(insert(10, "a"));
+    undoManager.undoableOp(insert(6, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    undoManager.undoableOp(delete(13, "a"));
+    undoManager.undoableOp(delete(3, "a"));
+    undoManager.checkpoint();
+    undoManager.undoableOp(insert(4, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    equal(undoManager.undo(), delete(5, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    // equal(undoManager.undo(), delete(8, "a"));
+    List<RealtimeOperation> undo = undoManager.undo();
+
+    undoManager.nonUndoableOp(insert(1, "a"));
+    equal(undoManager.undo(), delete(9, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    equal(undoManager.redo(), insert(10, "a"));
+    undoManager.nonUndoableOp(insert(1, "a"));
+    // equal(undoManager.redo(), insert(11, "a"));
+    List<RealtimeOperation> redo = undoManager.redo();
+
+    undoManager.nonUndoableOp(insert(1, "a"));
+    equal(undoManager.redo(), insert(10, "a"));
   }
 
   public void testUndoRedoWithNonundoableOps() {
@@ -138,10 +271,10 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert(5, "a"));
   }
 
-  void equal(List<AbstractOperation<?>> ops, AbstractOperation<?>... expected) {
+  <T extends Operation<?>> void equal(List<T> ops, T... expected) {
     assertEquals(expected.length, ops.size());
     int i = 0;
-    for (AbstractOperation<?> op : expected) {
+    for (Operation<?> op : expected) {
       assertEquals(op, ops.get(i));
       assertEquals(op.invert(), ops.get(i).invert());
       i++;

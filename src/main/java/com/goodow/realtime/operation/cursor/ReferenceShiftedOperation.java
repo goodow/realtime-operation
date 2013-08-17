@@ -11,7 +11,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.goodow.realtime.operation;
+package com.goodow.realtime.operation.cursor;
+
+import com.goodow.realtime.operation.AbstractOperation;
 
 import elemental.json.JsonArray;
 
@@ -55,8 +57,9 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  public ReferenceShiftedOperation[] transformWith(Operation<Void> operation, boolean arrivedAfter) {
-    assert isSameId(operation) && operation instanceof ReferenceShiftedOperation;
+  public ReferenceShiftedOperation[] transformWith(AbstractOperation<Void> operation,
+      boolean arrivedAfter) {
+    assert operation instanceof ReferenceShiftedOperation && isSameId(operation);
     ReferenceShiftedOperation op = (ReferenceShiftedOperation) operation;
     assert referencedObjectId.equals(op.referencedObjectId);
     return arrivedAfter ? new ReferenceShiftedOperation[] {new ReferenceShiftedOperation(id,

@@ -82,7 +82,7 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
   @Override
   public List<T> redo() {
     Pair<List<T>, List<T>> redoPlus = redoPlus();
-    return redoPlus == null ? null : redoPlus.second;
+    return redoPlus == null ? null : redoPlus.first;
   }
 
   @Override
@@ -92,7 +92,7 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
     }
     Pair<List<T>, List<T>> pair = redoStack.pop();
     undoStack.checkpoint();
-    for (T op : pair.second) {
+    for (T op : pair.first) {
       undoStack.push(op);
     }
     return pair;
@@ -102,7 +102,7 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
   @Override
   public List<T> undo() {
     Pair<List<T>, List<T>> undoPlus = undoPlus();
-    return undoPlus == null ? null : undoPlus.second;
+    return undoPlus == null ? null : undoPlus.first;
   }
 
   @Override
@@ -119,7 +119,7 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
     }
     Pair<List<T>, List<T>> pair = undoStack.pop();
     redoStack.checkpoint();
-    for (T op : pair.second) {
+    for (T op : pair.first) {
       redoStack.push(op);
     }
     return pair;

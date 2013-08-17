@@ -14,7 +14,6 @@
 package com.goodow.realtime.operation.map;
 
 import com.goodow.realtime.operation.AbstractOperation;
-import com.goodow.realtime.operation.Operation;
 
 public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarget<T>> {
   public static final int TYPE = 8;
@@ -44,8 +43,9 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
 
   @SuppressWarnings("unchecked")
   @Override
-  public AbstractMapOperation<T>[] transformWith(Operation<MapTarget<T>> operation, boolean arrivedAfter) {
-    assert isSameId(operation) && operation instanceof AbstractMapOperation;
+  public AbstractMapOperation<T>[] transformWith(AbstractOperation<MapTarget<T>> operation,
+      boolean arrivedAfter) {
+    assert operation instanceof AbstractMapOperation && isSameId(operation);
     AbstractMapOperation<T> op = (AbstractMapOperation<T>) operation;
     if (!key.equals(op.key)) {
       return new AbstractMapOperation[] {this};

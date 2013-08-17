@@ -13,6 +13,8 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.operation.util.Pair;
+
 import elemental.json.JsonArray;
 import elemental.json.JsonType;
 
@@ -22,8 +24,6 @@ public abstract class AbstractOperation<T> implements Operation<T> {
   }
 
   protected final String id;
-  private String userId;
-  private String sessionId;
 
   protected AbstractOperation(String id) {
     this.id = id;
@@ -34,18 +34,11 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return toString().equals(obj.toString());
   }
 
-  @Override
   public String getId() {
     return id;
   }
 
-  public String getSessionId() {
-    return sessionId;
-  }
-
-  public String getUserId() {
-    return userId;
-  }
+  public abstract int getType();
 
   @Override
   public int hashCode() {
@@ -57,11 +50,6 @@ public abstract class AbstractOperation<T> implements Operation<T> {
 
   @Override
   public abstract AbstractOperation<T> invert();
-
-  public void setUserAndSessionId(String userId, String sessionId) {
-    this.userId = userId;
-    this.sessionId = sessionId;
-  }
 
   @Override
   public String toString() {
@@ -78,10 +66,26 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return sb.toString();
   }
 
-  @Override
-  public abstract AbstractOperation<T>[] transformWith(Operation<T> operation, boolean arrivedAfter);
+  /**
+   * @param operation
+   * @param arrivedAfter Whether this operation reaches the server after {@code operation}.
+   * @return
+   */
+  public abstract AbstractOperation<T>[] transformWith(AbstractOperation<T> operation,
+      boolean arrivedAfter);
 
-  protected boolean isSameId(Operation<?> operation) {
+  @Override
+  public Pair<AbstractOperation<T>[], AbstractOperation<T>[]> transformWith(
+      Operation<T> serverOperation) {
+    assert serverOperation instanceof AbstractOperation
+        && isSameId((AbstractOperation<T>) serverOperation);
+    AbstractOperation<T> serverOp = (AbstractOperation<T>) serverOperation;
+    AbstractOperation<T>[] transformedClientOps = this.transformWith(serverOp, true);
+    AbstractOperation<T>[] transformedServerOps = serverOp.transformWith(this, false);
+    return Pair.of(transformedClientOps, transformedServerOps);
+  }
+
+  protected boolean isSameId(AbstractOperation<?> operation) {
     String id2 = operation.getId();
     return id == null ? id2 == null : id.equals(id2);
   }
