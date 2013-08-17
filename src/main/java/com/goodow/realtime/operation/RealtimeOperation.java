@@ -99,18 +99,7 @@ public class RealtimeOperation implements Operation<Object> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder().append('[');
-    boolean isFirst = true;
-    for (Operation<?> op : operations) {
-      if (isFirst) {
-        isFirst = false;
-      } else {
-        sb.append(',');
-      }
-      sb.append(op.toString());
-    }
-    sb.append(']');
-    return sb.toString();
+    return operations.toString();
   }
 
   @Override

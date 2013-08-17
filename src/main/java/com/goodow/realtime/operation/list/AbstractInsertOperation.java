@@ -19,17 +19,12 @@ public abstract class AbstractInsertOperation<T> extends AbstractListOperation<T
   public static final int TYPE = 5;
 
   protected AbstractInsertOperation(String id, int startIndex, T values) {
-    super(id, startIndex, values, -1);
+    super(TYPE, id, startIndex, values, -1);
   }
 
   @Override
   public void apply(ListTarget<T> target) {
     target.insert(startIndex, values);
-  }
-
-  @Override
-  public int getType() {
-    return TYPE;
   }
 
   @Override
@@ -47,8 +42,8 @@ public abstract class AbstractInsertOperation<T> extends AbstractListOperation<T
     assert operation instanceof AbstractListOperation && isSameId(operation);
     AbstractListOperation<T> op = (AbstractListOperation<T>) operation;
     int transformedStart = op.transformIndexReference(startIndex, arrivedAfter, false);
-    return transformedStart == startIndex ? new AbstractInsertOperation[] {this}
-        : new AbstractInsertOperation[] {create(transformedStart, values)};
+    return transformedStart == startIndex ? asArray(this)
+        : asArray(create(transformedStart, values));
   }
 
   protected abstract AbstractInsertOperation<T> create(int startIndex, T values);

@@ -21,7 +21,7 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
   protected final T oldValues;
 
   protected AbstractReplaceOperation(String id, int startIndex, T oldValues, T newValues) {
-    super(id, startIndex, newValues, -1);
+    super(TYPE, id, startIndex, newValues, -1);
     this.oldValues = oldValues;
     assert oldValues == null || getHelper().length(oldValues) == length;
   }
@@ -29,11 +29,6 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
   @Override
   public void apply(ListTarget<T> target) {
     target.replace(startIndex, values);
-  }
-
-  @Override
-  public int getType() {
-    return TYPE;
   }
 
   @Override
@@ -49,59 +44,56 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
     AbstractListOperation<T> op = (AbstractListOperation<T>) operation;
     int endIndex0 = startIndex + length;
     int endIndex1 = op.startIndex + op.length;
-    switch (op.getType()) {
+    switch (op.type) {
       case AbstractInsertOperation.TYPE:
         if (op.startIndex <= startIndex) {
           // ....[...]....
           // ...[.......
-          return new AbstractReplaceOperation[] {create(startIndex + op.length, oldValues, values)};
+          return asArray(create(startIndex + op.length, oldValues, values));
         } else if (op.startIndex < endIndex0) {
           // ....[...]....
           // ......[.....
           int len0 = op.startIndex - startIndex;
-          return new AbstractReplaceOperation[] {
-              create(startIndex, oldValues == null ? null : getHelper().subset(oldValues, 0, len0),
-                  getHelper().subset(values, 0, len0)),
-              create(endIndex1, oldValues == null ? null : getHelper().subset(oldValues, len0,
-                  length - len0), getHelper().subset(values, len0, length - len0))};
+          return asArray(create(startIndex, oldValues == null ? null : getHelper().subset(
+              oldValues, 0, len0), getHelper().subset(values, 0, len0)), create(endIndex1,
+              oldValues == null ? null : getHelper().subset(oldValues, len0, length - len0),
+              getHelper().subset(values, len0, length - len0)));
         } else {
           // ....[...]....
           // .........[.].
-          return new AbstractReplaceOperation[] {this};
+          return asArray(this);
         }
       case AbstractDeleteOperation.TYPE:
         if (op.startIndex >= endIndex0) {
           // ....[...]....
           // .........[.].
-          return new AbstractReplaceOperation[] {this};
+          return asArray(this);
         } else if (endIndex1 <= startIndex) {
           // ....[...]....
           // .[.]...
-          return new AbstractReplaceOperation[] {create(startIndex - op.length, oldValues, values)};
+          return asArray(create(startIndex - op.length, oldValues, values));
         } else if (op.startIndex <= startIndex) {
           // ....[...]....
           // ...[..]...]
-          return endIndex1 < endIndex0 ? new AbstractReplaceOperation[] {create(op.startIndex,
-              oldValues == null ? null : getHelper().subset(oldValues, endIndex1 - startIndex,
-                  endIndex0 - endIndex1), getHelper().subset(values, endIndex1 - startIndex,
-                  endIndex0 - endIndex1))} : null;
+          return endIndex1 < endIndex0 ? asArray(create(op.startIndex, oldValues == null ? null
+              : getHelper().subset(oldValues, endIndex1 - startIndex, endIndex0 - endIndex1),
+              getHelper().subset(values, endIndex1 - startIndex, endIndex0 - endIndex1))) : null;
         } else {
           // ....[...]....
           // .....[.]..]
-          return endIndex1 < endIndex0 ? new AbstractReplaceOperation[] {create(startIndex,
-              oldValues == null ? null : getHelper().replaceWith(oldValues,
-                  op.startIndex - startIndex, op.length, null), getHelper().replaceWith(values,
-                  op.startIndex - startIndex, op.length, null))}
-              : new AbstractReplaceOperation[] {create(startIndex, oldValues == null ? null
-                  : getHelper().subset(oldValues, 0, op.startIndex - startIndex), getHelper()
-                  .subset(values, 0, op.startIndex - startIndex))};
+          return endIndex1 < endIndex0 ? asArray(create(startIndex, oldValues == null ? null
+              : getHelper().replaceWith(oldValues, op.startIndex - startIndex, op.length, null),
+              getHelper().replaceWith(values, op.startIndex - startIndex, op.length, null)))
+              : asArray(create(startIndex, oldValues == null ? null : getHelper().subset(oldValues,
+                  0, op.startIndex - startIndex), getHelper().subset(values, 0,
+                  op.startIndex - startIndex)));
         }
       case AbstractReplaceOperation.TYPE:
         if (endIndex1 <= startIndex || op.startIndex >= endIndex0
             || (arrivedAfter && oldValues == null)) {
           // ....[...]....
           // .[.]. OR .[.].
-          return new AbstractReplaceOperation[] {this};
+          return asArray(this);
         } else if (op.startIndex <= startIndex) {
           // ....[...]....
           // ...[..]...]
@@ -111,12 +103,11 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
                     endIndex1 - startIndex, oldValues, endIndex1 - startIndex,
                     endIndex0 - endIndex1) : getHelper().subset(op.values,
                     startIndex - op.startIndex, length);
-            return new AbstractReplaceOperation[] {create(startIndex, transformedOldValues, values)};
+            return asArray(create(startIndex, transformedOldValues, values));
           } else {
-            return endIndex1 < endIndex0 ? new AbstractReplaceOperation[] {create(endIndex1,
-                oldValues == null ? null : getHelper().subset(oldValues, endIndex1 - startIndex,
-                    endIndex0 - endIndex1), getHelper().subset(values, endIndex1 - startIndex,
-                    endIndex0 - endIndex1))} : null;
+            return endIndex1 < endIndex0 ? asArray(create(endIndex1, oldValues == null ? null
+                : getHelper().subset(oldValues, endIndex1 - startIndex, endIndex0 - endIndex1),
+                getHelper().subset(values, endIndex1 - startIndex, endIndex0 - endIndex1))) : null;
           }
         } else {
           // ....[...]....
@@ -127,22 +118,20 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
                     op.startIndex - startIndex, op.length, op.values) : getHelper().subset(
                     oldValues, 0, op.startIndex - startIndex, op.values, 0,
                     endIndex0 - op.startIndex);
-            return new AbstractReplaceOperation[] {create(startIndex, transformedOldValues, values)};
+            return asArray(create(startIndex, transformedOldValues, values));
           } else {
             AbstractReplaceOperation<T> op1 =
                 create(startIndex, oldValues == null ? null : getHelper().subset(oldValues, 0,
                     op.startIndex - startIndex), getHelper().subset(values, 0,
                     op.startIndex - startIndex));
-            return endIndex1 < endIndex0 ? new AbstractReplaceOperation[] {
-                op1,
-                create(endIndex1, oldValues == null ? null : getHelper().subset(oldValues,
-                    endIndex1 - startIndex, endIndex0 - endIndex1), getHelper().subset(values,
-                    endIndex1 - startIndex, endIndex0 - endIndex1))}
-                : new AbstractReplaceOperation[] {op1};
+            return endIndex1 < endIndex0 ? asArray(op1, create(endIndex1, oldValues == null ? null
+                : getHelper().subset(oldValues, endIndex1 - startIndex, endIndex0 - endIndex1),
+                getHelper().subset(values, endIndex1 - startIndex, endIndex0 - endIndex1)))
+                : asArray(op1);
           }
         }
       default:
-        throw new RuntimeException("Unsupported List Operation type: " + op.getType());
+        throw new RuntimeException("Unsupported List Operation type: " + op.type);
     }
   }
 

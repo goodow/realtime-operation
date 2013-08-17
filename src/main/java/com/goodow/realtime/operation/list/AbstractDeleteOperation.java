@@ -19,21 +19,16 @@ public abstract class AbstractDeleteOperation<T> extends AbstractListOperation<T
   public static final int TYPE = 6;
 
   protected AbstractDeleteOperation(String id, int startIndex, int length) {
-    super(id, startIndex, null, length);
+    super(TYPE, id, startIndex, null, length);
   }
 
   protected AbstractDeleteOperation(String id, int startIndex, T values) {
-    super(id, startIndex, values, -1);
+    super(TYPE, id, startIndex, values, -1);
   }
 
   @Override
   public void apply(ListTarget<T> target) {
     target.delete(startIndex, length);
-  }
-
-  @Override
-  public int getType() {
-    return TYPE;
   }
 
   @Override
@@ -55,87 +50,84 @@ public abstract class AbstractDeleteOperation<T> extends AbstractListOperation<T
     AbstractListOperation<T> op = (AbstractListOperation<T>) operation;
     int endIndex0 = startIndex + length;
     int endIndex1 = op.startIndex + op.length;
-    switch (op.getType()) {
+    switch (op.type) {
       case AbstractInsertOperation.TYPE:
         if (op.startIndex <= startIndex) {
           // ....[...]....
           // ...[.......
-          return new AbstractDeleteOperation[] {values == null ? create(startIndex + op.length,
-              length) : create(startIndex + op.length, values)};
+          return asArray(values == null ? create(startIndex + op.length, length) : create(
+              startIndex + op.length, values));
         } else if (op.startIndex < endIndex0) {
           // ....[...]....
           // ......[.....
           int len0 = op.startIndex - startIndex;
           int len1 = length - len0;
-          return new AbstractDeleteOperation[] {
-              values == null ? create(startIndex, len0) : create(startIndex, getHelper().subset(
-                  values, 0, len0)),
-              values == null ? create(startIndex + op.length, len1) : create(
-                  startIndex + op.length, getHelper().subset(values, len0, len1))};
+          return asArray(values == null ? create(startIndex, len0) : create(startIndex, getHelper()
+              .subset(values, 0, len0)), values == null ? create(startIndex + op.length, len1)
+              : create(startIndex + op.length, getHelper().subset(values, len0, len1)));
         } else {
           // ....[...]....
           // .........[.].
-          return new AbstractDeleteOperation[] {this};
+          return asArray(this);
         }
       case AbstractDeleteOperation.TYPE:
         if (endIndex1 <= startIndex) {
           // ....[...]....
           // .[.]...
-          return new AbstractDeleteOperation[] {values == null ? create(startIndex - op.length,
-              length) : create(startIndex - op.length, values)};
+          return asArray(values == null ? create(startIndex - op.length, length) : create(
+              startIndex - op.length, values));
         } else if (op.startIndex >= endIndex0) {
           // ....[...]....
           // .........[.].
-          return new AbstractDeleteOperation[] {this};
+          return asArray(this);
         } else if (op.startIndex <= startIndex) {
           // ....[...]....
           // ...[..]...]
           int len = endIndex0 - endIndex1;
-          return endIndex1 < endIndex0 ? new AbstractDeleteOperation[] {values == null ? create(
-              op.startIndex, len) : create(op.startIndex, getHelper().subset(values,
-              endIndex1 - startIndex, len))} : null;
+          return endIndex1 < endIndex0 ? asArray(values == null ? create(op.startIndex, len)
+              : create(op.startIndex, getHelper().subset(values, endIndex1 - startIndex, len)))
+              : null;
         } else {
           // ....[...]....
           // .....[.]..]
           if (endIndex1 < endIndex0) {
-            return new AbstractDeleteOperation[] {values == null ? create(startIndex, length
-                - op.length) : create(startIndex, getHelper().replaceWith(values,
-                op.startIndex - startIndex, op.length, null))};
+            return asArray(values == null ? create(startIndex, length - op.length) : create(
+                startIndex, getHelper().replaceWith(values, op.startIndex - startIndex, op.length,
+                    null)));
           } else {
-            return new AbstractDeleteOperation[] {values == null ? create(startIndex, op.startIndex
-                - startIndex) : create(startIndex, getHelper().subset(values, 0,
-                op.startIndex - startIndex))};
+            return asArray(values == null ? create(startIndex, op.startIndex - startIndex)
+                : create(startIndex, getHelper().subset(values, 0, op.startIndex - startIndex)));
           }
         }
       case AbstractReplaceOperation.TYPE:
         if (values == null || endIndex1 <= startIndex || op.startIndex >= endIndex0) {
           // ....[...]....
           // .[.]. OR .[.].
-          return new AbstractDeleteOperation[] {this};
+          return asArray(this);
         } else if (op.startIndex <= startIndex) {
           // ....[...]....
           // ...[..]...]
           if (endIndex1 < endIndex0) {
-            return new AbstractDeleteOperation[] {create(startIndex, getHelper().subset(op.values,
+            return asArray(create(startIndex, getHelper().subset(op.values,
                 startIndex - op.startIndex, endIndex1 - startIndex, values, endIndex1 - startIndex,
-                endIndex0 - endIndex1))};
+                endIndex0 - endIndex1)));
           } else {
-            return new AbstractDeleteOperation[] {create(startIndex, getHelper().subset(op.values,
-                startIndex - op.startIndex, length))};
+            return asArray(create(startIndex, getHelper().subset(op.values,
+                startIndex - op.startIndex, length)));
           }
         } else {
           // ....[...]....
           // .....[.]..]
           if (endIndex1 < endIndex0) {
-            return new AbstractDeleteOperation[] {create(startIndex, getHelper().replaceWith(
-                values, op.startIndex - startIndex, op.length, op.values))};
+            return asArray(create(startIndex, getHelper().replaceWith(values,
+                op.startIndex - startIndex, op.length, op.values)));
           } else {
-            return new AbstractDeleteOperation[] {create(startIndex, getHelper().subset(values, 0,
-                op.startIndex - startIndex, op.values, 0, endIndex0 - op.startIndex))};
+            return asArray(create(startIndex, getHelper().subset(values, 0,
+                op.startIndex - startIndex, op.values, 0, endIndex0 - op.startIndex)));
           }
         }
       default:
-        throw new RuntimeException("Unsupported List Operation type: " + op.getType());
+        throw new RuntimeException("Unsupported List Operation type: " + op.type);
     }
   }
 

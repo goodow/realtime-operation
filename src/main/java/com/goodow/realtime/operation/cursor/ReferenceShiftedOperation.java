@@ -34,7 +34,7 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
 
   public ReferenceShiftedOperation(String id, String referencedObjectId, int newIndex,
       boolean canBeDeleted, int oldIndex) {
-    super(id);
+    super(TYPE, id);
     this.referencedObjectId = referencedObjectId;
     this.newIndex = newIndex;
     this.canBeDeleted = canBeDeleted;
@@ -44,11 +44,6 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
   @Override
   public void apply(Void target) {
     throw new IllegalStateException();
-  }
-
-  @Override
-  public int getType() {
-    return TYPE;
   }
 
   @Override
@@ -62,8 +57,8 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
     assert operation instanceof ReferenceShiftedOperation && isSameId(operation);
     ReferenceShiftedOperation op = (ReferenceShiftedOperation) operation;
     assert referencedObjectId.equals(op.referencedObjectId);
-    return arrivedAfter ? new ReferenceShiftedOperation[] {new ReferenceShiftedOperation(id,
-        referencedObjectId, newIndex, canBeDeleted, op.newIndex)} : null;
+    return arrivedAfter ? asArray(new ReferenceShiftedOperation(id, referencedObjectId, newIndex,
+        canBeDeleted, op.newIndex)) : null;
   }
 
   @Override

@@ -20,7 +20,7 @@ import java.util.List;
 import elemental.json.JsonValue;
 
 public interface Transformer<T> {
-  T createOperation(JsonValue serialized);
+  T createOperation(String userId, String sessionId, JsonValue serialized);
 
   // OperationSink<O> createSnapshot(JsonValue serialized);
 

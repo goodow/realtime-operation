@@ -29,21 +29,16 @@ public class CreateOperation extends AbstractOperation<Void> {
     return new CreateOperation(parseId(serialized), (int) serialized.getNumber(2));
   }
 
-  public final int type;
+  public final int subType;
 
   public CreateOperation(String id, int type) {
-    super(id);
-    this.type = type;
+    super(TYPE, id);
+    this.subType = type;
   }
 
   @Override
   public void apply(Void target) {
     throw new IllegalStateException();
-  }
-
-  @Override
-  public int getType() {
-    return TYPE;
   }
 
   @Override
@@ -58,6 +53,6 @@ public class CreateOperation extends AbstractOperation<Void> {
 
   @Override
   protected void toString(StringBuilder sb) {
-    sb.append(type);
+    sb.append(subType);
   }
 }

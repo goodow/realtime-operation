@@ -38,10 +38,17 @@ import elemental.json.JsonValue;
 
 public class TransformerImpl<T extends Operation<?>> implements Transformer<T> {
 
+  @SuppressWarnings("unchecked")
   @Override
-  public T createOperation(JsonValue serialized) {
-    AbstractOperation<?> op = createOperation((JsonArray) serialized);
-    return (T) op;
+  public T createOperation(String userId, String sessionId, JsonValue serialized) {
+    JsonArray ops = (JsonArray) serialized;
+    int length = ops.length();
+    assert length > 0;
+    List<AbstractOperation<?>> operations = new ArrayList<AbstractOperation<?>>(length);
+    for (int i = 0; i < length; i++) {
+      operations.add(createOperation(ops.getArray(i)));
+    }
+    return (T) new RealtimeOperation(userId, sessionId, operations);
   }
 
   @Override

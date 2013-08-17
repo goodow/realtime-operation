@@ -23,9 +23,11 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return serialized.get(1).getType() == JsonType.NULL ? null : serialized.getString(1);
   }
 
-  protected final String id;
+  public final int type;
+  public final String id;
 
-  protected AbstractOperation(String id) {
+  protected AbstractOperation(int type, String id) {
+    this.type = type;
     this.id = id;
   }
 
@@ -33,12 +35,6 @@ public abstract class AbstractOperation<T> implements Operation<T> {
   public boolean equals(Object obj) {
     return toString().equals(obj.toString());
   }
-
-  public String getId() {
-    return id;
-  }
-
-  public abstract int getType();
 
   @Override
   public int hashCode() {
@@ -54,7 +50,7 @@ public abstract class AbstractOperation<T> implements Operation<T> {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder().append('[');
-    sb.append(getType()).append(',');
+    sb.append(type).append(',');
     if (id == null) {
       sb.append((String) null);
     } else {
@@ -85,8 +81,12 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return Pair.of(transformedClientOps, transformedServerOps);
   }
 
+  protected <O> O[] asArray(O... operations) {
+    return operations;
+  }
+
   protected boolean isSameId(AbstractOperation<?> operation) {
-    String id2 = operation.getId();
+    String id2 = operation.id;
     return id == null ? id2 == null : id.equals(id2);
   }
 

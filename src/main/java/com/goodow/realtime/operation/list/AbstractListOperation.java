@@ -26,13 +26,14 @@ public abstract class AbstractListOperation<T> extends AbstractOperation<ListTar
   protected final T values;
   protected final int length;
 
-  protected AbstractListOperation(String id, int startIndex, T values, int length) {
-    super(id);
+  protected AbstractListOperation(int type, String id, int startIndex, T values, int length) {
+    super(type, id);
     assert startIndex >= 0;
     this.startIndex = startIndex;
     this.values = values;
     assert values != null || length > 0;
     this.length = length < 0 ? getHelper().length(values) : length;
+    assert values == null || getHelper().length(values) == this.length;
     assert this.length > 0;
   }
 

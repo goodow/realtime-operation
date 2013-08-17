@@ -23,7 +23,7 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
   protected final T newValue;
 
   protected AbstractMapOperation(String id, String key, T oldValue, T newValue) {
-    super(id);
+    super(TYPE, id);
     assert key != null : "Null key";
     assert (oldValue == null && newValue == null) || !equals(oldValue, newValue);
     this.key = key;
@@ -36,11 +36,6 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
     target.set(key, newValue);
   }
 
-  @Override
-  public int getType() {
-    return TYPE;
-  }
-
   @SuppressWarnings("unchecked")
   @Override
   public AbstractMapOperation<T>[] transformWith(AbstractOperation<MapTarget<T>> operation,
@@ -48,12 +43,12 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
     assert operation instanceof AbstractMapOperation && isSameId(operation);
     AbstractMapOperation<T> op = (AbstractMapOperation<T>) operation;
     if (!key.equals(op.key)) {
-      return new AbstractMapOperation[] {this};
+      return asArray(this);
     }
     if (!arrivedAfter || equals(newValue, op.newValue)) {
       return null;
     }
-    return new AbstractMapOperation[] {create(id, key, op.newValue, newValue)};
+    return asArray(create(id, key, op.newValue, newValue));
   }
 
   protected abstract AbstractMapOperation<T> create(String id, String key, T oldValue, T newValue);
