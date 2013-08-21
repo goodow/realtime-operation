@@ -109,7 +109,7 @@ final class UndoStack<T> {
     assert list.get(0) == null && list.get(1) == null;
     list.remove(1);
     list.remove(0);
-    size = size - 2;
+    size -= 2;
     int nextCheckpointer = -1;
     boolean previousIsNull = false;
     for (T op : list) {
@@ -125,15 +125,12 @@ final class UndoStack<T> {
   }
 
   private int popOne(List<T> results) {
-    int index = ops.size() - 1;
-    for (;; index--) {
-      if (ops.get(index) == null) {
-        break;
-      }
-    }
+    int index = ops.lastIndexOf(null);
     ops.remove(index);
     T op = algorithms.invert(ops.remove(index));
-    algorithms.transform(results, op, ops, index);
+    if (op != null) {
+      algorithms.transform(results, op, ops, index);
+    }
     return index;
   }
 }

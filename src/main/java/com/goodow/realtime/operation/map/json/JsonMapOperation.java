@@ -20,6 +20,11 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class JsonMapOperation extends AbstractMapOperation<JsonValue> {
+  public static boolean jsonEquals(JsonValue value0, JsonValue value1) {
+    return value0 == null ? value1 == null : (value1 == null ? false : value0.toJson().equals(
+        value1.toJson()));
+  }
+
   public static JsonMapOperation parse(JsonArray serialized) {
     int length = serialized.length();
     assert serialized.getNumber(0) == TYPE && (length == 3 || length == 4);
@@ -45,8 +50,7 @@ public class JsonMapOperation extends AbstractMapOperation<JsonValue> {
 
   @Override
   protected boolean equals(JsonValue value0, JsonValue value1) {
-    return value0 == null ? value1 == null : value1 == null ? false : value0.toJson().equals(
-        value1.toJson());
+    return jsonEquals(value0, value1);
   }
 
   @Override
