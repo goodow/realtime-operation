@@ -21,28 +21,23 @@ import com.goodow.realtime.operation.util.Pair;
 
 import junit.framework.TestCase;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class UndoManagerTest extends TestCase {
   private static RealtimeOperation delete(int startIndex, String text) {
-    return new RealtimeOperation("userId", null, Arrays.asList(new StringDeleteOperation(null,
-        startIndex, text)));
+    return new RealtimeOperation("userId", null, new StringDeleteOperation(null, startIndex, text));
   }
 
   private static RealtimeOperation delete(String id, int startIndex) {
-    return new RealtimeOperation("userId", null, Arrays.asList(new StringDeleteOperation(id,
-        startIndex, "a")));
+    return new RealtimeOperation("userId", null, new StringDeleteOperation(id, startIndex, "a"));
   }
 
   private static RealtimeOperation insert(int startIndex, String text) {
-    return new RealtimeOperation("userId", null, Arrays.asList(new StringInsertOperation(null,
-        startIndex, text)));
+    return new RealtimeOperation("userId", null, new StringInsertOperation(null, startIndex, text));
   }
 
   private static RealtimeOperation insert(String id, int startIndex) {
-    return new RealtimeOperation("userId", null, Arrays.asList(new StringInsertOperation(id,
-        startIndex, "a")));
+    return new RealtimeOperation("userId", null, new StringInsertOperation(id, startIndex, "a"));
   }
 
   UndoManagerPlus<RealtimeOperation> undoManager = UndoManagerFactory.createUndoManager();

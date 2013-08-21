@@ -28,7 +28,7 @@ public class JsonHelper implements ListHelper<JsonValue[]> {
   }
 
   @Override
-  public JsonValue[] parse(JsonArray serialized) {
+  public JsonValue[] parseValues(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE;
     int length = serialized.length();
     assert length >= 2;

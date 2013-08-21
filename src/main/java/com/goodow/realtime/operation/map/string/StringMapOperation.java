@@ -43,7 +43,7 @@ public class StringMapOperation extends AbstractMapOperation<String> {
   protected void toString(StringBuilder sb) {
     super.toString(sb);
     if (newValue != null) {
-      sb.append(",'").append(newValue).append('\'');
+      sb.append(",\"").append(newValue).append('"');
     }
   }
 }

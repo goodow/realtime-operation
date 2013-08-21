@@ -21,7 +21,7 @@ import elemental.json.JsonValue;
 public class JsonReplaceOperation extends AbstractReplaceOperation<JsonValue[]> {
   public static JsonReplaceOperation parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    JsonValue[] values = JsonHelper.INSTANCE.parse(serialized.getArray(3));
+    JsonValue[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new JsonReplaceOperation(parseId(serialized), parseStartIndex(serialized), null, values);
   }
 

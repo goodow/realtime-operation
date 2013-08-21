@@ -20,9 +20,14 @@ import java.util.List;
 import elemental.json.JsonValue;
 
 public interface Transformer<T> {
-  T createOperation(String userId, String sessionId, JsonValue serialized);
+  List<T> compact(List<T> operations);
 
   // OperationSink<O> createSnapshot(JsonValue serialized);
 
+  T createOperation(String userId, String sessionId, JsonValue serialized);
+
   Pair<List<T>, List<T>> transform(List<T> clientOps, List<T> serverOps);
+
+  void transform(List<T> transformedResults, T operation, List<T> transformWith, int startIndex,
+      boolean arrivedAfter);
 }

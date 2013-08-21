@@ -54,7 +54,7 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     if (id == null) {
       sb.append((String) null);
     } else {
-      sb.append('\'').append(id).append('\'');
+      sb.append('"').append(id).append('"');
     }
     sb.append(',');
     toString(sb);

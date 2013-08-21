@@ -14,7 +14,6 @@
 package com.goodow.realtime.operation.list;
 
 import com.goodow.realtime.operation.AbstractOperation;
-import com.goodow.realtime.operation.list.string.StringDeleteOperation;
 import com.goodow.realtime.operation.list.string.StringInsertOperation;
 import com.goodow.realtime.operation.list.string.StringReplaceOperation;
 
@@ -32,61 +31,61 @@ public class DeleteOperationTest extends TestCase {
    */
   public void testDeleteVsDelete() {
     // A's deletion spatially before B's deletion
-    AbstractDeleteOperation<String> op1 = new StringDeleteOperation(null, 2, "234");
-    AbstractDeleteOperation<String> op2 = new StringDeleteOperation(null, 6, "6");
+    AbstractDeleteOperation<String> op1 = new SimpleDeleteOperation<String>(null, 2, "234");
+    AbstractDeleteOperation<String> op2 = new SimpleDeleteOperation<String>(null, 6, "6");
     AbstractDeleteOperation<String>[] transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertSame(op1, transformedOp[0]);
 
     transformedOp = op2.transformWith(op1, true);
-    expected0 = new StringDeleteOperation(null, 3, "6");
+    expected0 = new SimpleDeleteOperation<String>(null, 3, "6");
     equals(expected0, transformedOp[0]);
     transformedOp = op2.transformWith(op1, false);
     equals(expected0, transformedOp[0]);
 
     // A's deletion spatially adjacent to and before B's deletion
-    op2 = new StringDeleteOperation(null, 5, "56");
+    op2 = new SimpleDeleteOperation<String>(null, 5, "56");
     transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertSame(op1, transformedOp[0]);
 
     transformedOp = op2.transformWith(op1, true);
-    expected0 = new StringDeleteOperation(null, 2, "56");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "56");
     equals(expected0, transformedOp[0]);
     transformedOp = op2.transformWith(op1, false);
     equals(expected0, transformedOp[0]);
 
     // A's deletion overlaps B's deletion
-    op2 = new StringDeleteOperation(null, 3, "345");
+    op2 = new SimpleDeleteOperation<String>(null, 3, "345");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 2, "2");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "2");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
 
     transformedOp = op2.transformWith(op1, true);
-    expected0 = new StringDeleteOperation(null, 2, "5");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "5");
     equals(expected0, transformedOp[0]);
     transformedOp = op2.transformWith(op1, false);
     equals(expected0, transformedOp[0]);
 
     // A's deletion a subset of B's deletion
-    op2 = new StringDeleteOperation(null, 1, "123456");
+    op2 = new SimpleDeleteOperation<String>(null, 1, "123456");
     transformedOp = op1.transformWith(op2, true);
     assertNull(transformedOp);
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
 
     transformedOp = op2.transformWith(op1, true);
-    expected0 = new StringDeleteOperation(null, 1, "156");
+    expected0 = new SimpleDeleteOperation<String>(null, 1, "156");
     equals(expected0, transformedOp[0]);
     transformedOp = op2.transformWith(op1, false);
     equals(expected0, transformedOp[0]);
 
     // A's deletion identical to B's deletion
-    op2 = new StringDeleteOperation(null, 2, "234");
+    op2 = new SimpleDeleteOperation<String>(null, 2, "234");
     transformedOp = op1.transformWith(op2, true);
     assertNull(transformedOp);
     transformedOp = op1.transformWith(op2, false);
@@ -98,10 +97,10 @@ public class DeleteOperationTest extends TestCase {
    */
   public void testDeleteVsInsert() {
     // A's insertion spatially before B's deletion
-    AbstractDeleteOperation<String> op1 = new StringDeleteOperation(null, 3, "abc");
+    AbstractDeleteOperation<String> op1 = new SimpleDeleteOperation<String>(null, 3, "abc");
     AbstractInsertOperation<String> op2 = new StringInsertOperation(null, 2, "de");
     AbstractDeleteOperation<String>[] transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 5, "abc");
+    expected0 = new SimpleDeleteOperation<String>(null, 5, "abc");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
@@ -109,7 +108,7 @@ public class DeleteOperationTest extends TestCase {
     // A's insertion spatially at the start of B's deletion
     op2 = new StringInsertOperation(null, 3, "de");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 5, "abc");
+    expected0 = new SimpleDeleteOperation<String>(null, 5, "abc");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
@@ -117,8 +116,8 @@ public class DeleteOperationTest extends TestCase {
     // A's insertion spatially inside B's deletion
     op2 = new StringInsertOperation(null, 4, "de");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 3, "a");
-    expected1 = new StringDeleteOperation(null, 5, "bc");
+    expected0 = new SimpleDeleteOperation<String>(null, 3, "a");
+    expected1 = new SimpleDeleteOperation<String>(null, 5, "bc");
     equals(expected0, transformedOp[0]);
     equals(expected1, transformedOp[1]);
     transformedOp = op1.transformWith(op2, false);
@@ -142,7 +141,7 @@ public class DeleteOperationTest extends TestCase {
 
   public void testDeleteVsReplace() {
     // A's replacement spatially before B's deletion
-    AbstractDeleteOperation<String> op1 = new StringDeleteOperation(null, 2, "234");
+    AbstractDeleteOperation<String> op1 = new SimpleDeleteOperation<String>(null, 2, "234");
     StringReplaceOperation op2 = new StringReplaceOperation(null, 0, "0", "a");
     AbstractDeleteOperation<String>[] transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
@@ -161,7 +160,7 @@ public class DeleteOperationTest extends TestCase {
     // ...[..]....
     op2 = new StringReplaceOperation(null, 0, "012", "abc");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 2, "c34");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "c34");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
@@ -171,7 +170,7 @@ public class DeleteOperationTest extends TestCase {
     // ......[...]..
     op2 = new StringReplaceOperation(null, 3, "345", "abc");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 2, "2ab");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "2ab");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
@@ -179,7 +178,7 @@ public class DeleteOperationTest extends TestCase {
     // A's replacement a subset of B's deletion
     op2 = new StringReplaceOperation(null, 3, "3", "a");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 2, "2a4");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "2a4");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
@@ -187,7 +186,7 @@ public class DeleteOperationTest extends TestCase {
     // A's replacement a superset of B's deletion
     op2 = new StringReplaceOperation(null, 1, "123456", "abcdef");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 2, "bcd");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "bcd");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
@@ -195,21 +194,21 @@ public class DeleteOperationTest extends TestCase {
     // A's replacement identical to B's deletion
     op2 = new StringReplaceOperation(null, 2, "234", "abc");
     transformedOp = op1.transformWith(op2, true);
-    expected0 = new StringDeleteOperation(null, 2, "abc");
+    expected0 = new SimpleDeleteOperation<String>(null, 2, "abc");
     equals(expected0, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     equals(expected0, transformedOp[0]);
   }
 
   public void testParseFromJson() {
-    AbstractDeleteOperation<String> op = new StringDeleteOperation(null, 2, "123");
-    assertEquals(op, StringDeleteOperation.parse((JsonArray) Json.instance().parse(op.toString())));
-    op = new StringDeleteOperation("id", 0, "true");
-    assertEquals(op, StringDeleteOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    AbstractDeleteOperation<String> op = new SimpleDeleteOperation<String>(null, 2, "123");
+    assertEquals(op, SimpleDeleteOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    op = new SimpleDeleteOperation<String>("id", 0, "true");
+    assertEquals(op, SimpleDeleteOperation.parse((JsonArray) Json.instance().parse(op.toString())));
   }
 
   public void testTransformIndexReference() {
-    AbstractDeleteOperation<String> op = new StringDeleteOperation(null, 1, "abc");
+    AbstractDeleteOperation<String> op = new SimpleDeleteOperation<String>(null, 1, "abc");
     int transformIndex = op.transformIndexReference(0, true, true);
     assertEquals(0, transformIndex);
     transformIndex = op.transformIndexReference(0, true, false);

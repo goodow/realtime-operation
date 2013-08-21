@@ -16,20 +16,25 @@ package com.goodow.realtime.operation;
 import com.goodow.realtime.operation.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class RealtimeOperation implements Operation<Object> {
 
-  private final List<? extends AbstractOperation<?>> operations;
   public final String userId;
   public final String sessionId;
+  public final List<? extends Operation<?>> operations;
 
-  public RealtimeOperation(String userId, String sessionId,
-      List<? extends AbstractOperation<?>> operations) {
-    assert userId != null && operations != null && !operations.isEmpty();
+  public RealtimeOperation(String userId, String sessionId, List<? extends Operation<?>> operations) {
+    assert operations != null && !operations.isEmpty() && !operations.contains(null);
     this.userId = userId;
     this.sessionId = sessionId;
-    this.operations = operations;
+    this.operations = Collections.unmodifiableList(operations);
+  }
+
+  public RealtimeOperation(String userId, String sessionId, Operation<?>... operations) {
+    this(userId, sessionId, Arrays.asList(operations));
   }
 
   @SuppressWarnings("unchecked")
@@ -88,9 +93,10 @@ public class RealtimeOperation implements Operation<Object> {
 
   @Override
   public RealtimeOperation invert() {
-    List<AbstractOperation<?>> ops = new ArrayList<AbstractOperation<?>>();
-    for (int i = operations.size() - 1; i >= 0; i--) {
-      AbstractOperation<?> invertOp = operations.get(i).invert();
+    int size = operations.size();
+    List<Operation<?>> ops = new ArrayList<Operation<?>>(size);
+    for (int i = size - 1; i >= 0; i--) {
+      Operation<?> invertOp = operations.get(i).invert();
       assert invertOp != null;
       ops.add(invertOp);
     }
@@ -107,11 +113,11 @@ public class RealtimeOperation implements Operation<Object> {
       Operation<Object> serverOperation) {
     assert serverOperation instanceof RealtimeOperation;
     RealtimeOperation serverOp = (RealtimeOperation) serverOperation;
-    TransformerImpl<AbstractOperation<?>> transformer = new TransformerImpl<AbstractOperation<?>>();
+    TransformerImpl<Operation<?>> transformer = new TransformerImpl<Operation<?>>();
     @SuppressWarnings("unchecked")
-    Pair<List<AbstractOperation<?>>, List<AbstractOperation<?>>> pair =
-        transformer.transform((List<AbstractOperation<?>>) operations,
-            (List<AbstractOperation<?>>) serverOp.operations);
+    Pair<List<Operation<?>>, List<Operation<?>>> pair =
+        transformer.transform((List<Operation<?>>) operations,
+            (List<Operation<?>>) serverOp.operations);
     RealtimeOperation[] transformedClientOp =
         pair.first.isEmpty() ? null : new RealtimeOperation[] {new RealtimeOperation(userId,
             sessionId, pair.first)};

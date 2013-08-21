@@ -20,7 +20,7 @@ import elemental.json.JsonArray;
 public class StringInsertOperation extends AbstractInsertOperation<String> {
   public static StringInsertOperation parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    String values = StringHelper.INSTANCE.parse(serialized.getArray(3));
+    String values = StringHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new StringInsertOperation(parseId(serialized), parseStartIndex(serialized), values);
   }
 

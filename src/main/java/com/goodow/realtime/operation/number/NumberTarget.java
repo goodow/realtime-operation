@@ -11,22 +11,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.goodow.realtime.operation.list;
+package com.goodow.realtime.operation.number;
 
-import elemental.json.JsonArray;
+public interface NumberTarget {
+  void add(double number);
 
-public interface ListHelper<T> {
-  int length(T values);
-
-  T parseValues(JsonArray serialized);
-
-  T replaceWith(T values, int startIndex, int length, T replacement);
-
-  StringBuilder serialize(T values);
-
-  T subset(T values, int startIndex, int length);
-
-  T subset(T values, int startIndex0, int length0, int startIndex1, int length1);
-
-  T subset(T values0, int startIndex0, int length0, T values1, int startIndex1, int length1);
+  void reset(double number);
 }

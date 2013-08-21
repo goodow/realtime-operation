@@ -63,7 +63,7 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
 
   @Override
   protected void toString(StringBuilder sb) {
-    sb.append('\'').append(referencedObjectId).append("',").append(newIndex).append(',');
+    sb.append('"').append(referencedObjectId).append("\",").append(newIndex).append(',');
     sb.append(canBeDeleted).append(',').append(oldIndex);
   }
 }

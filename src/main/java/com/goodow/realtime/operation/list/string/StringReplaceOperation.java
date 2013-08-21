@@ -20,7 +20,7 @@ import elemental.json.JsonArray;
 public class StringReplaceOperation extends AbstractReplaceOperation<String> {
   public static StringReplaceOperation parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    String values = StringHelper.INSTANCE.parse(serialized.getArray(3));
+    String values = StringHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new StringReplaceOperation(parseId(serialized), parseStartIndex(serialized), null,
         values);
   }

@@ -59,6 +59,6 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
 
   @Override
   protected void toString(StringBuilder sb) {
-    sb.append('\'').append(key).append('\'');
+    sb.append('"').append(key).append('"');
   }
 }

@@ -14,6 +14,7 @@
 package com.goodow.realtime.operation.undo;
 
 import com.goodow.realtime.operation.RealtimeOperation;
+import com.goodow.realtime.operation.Transformer;
 import com.goodow.realtime.operation.TransformerImpl;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public final class UndoManagerFactory {
 
   private static final UndoManagerImpl.Algorithms<RealtimeOperation> algorithms =
       new UndoManagerImpl.Algorithms<RealtimeOperation>() {
-        TransformerImpl<RealtimeOperation> transformer = new TransformerImpl<RealtimeOperation>();
+        Transformer<RealtimeOperation> transformer = new TransformerImpl<RealtimeOperation>();
 
         @Override
         public RealtimeOperation invert(RealtimeOperation operation) {

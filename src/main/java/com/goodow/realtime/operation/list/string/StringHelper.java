@@ -27,7 +27,7 @@ public class StringHelper implements ListHelper<String> {
   }
 
   @Override
-  public String parse(JsonArray serialized) {
+  public String parseValues(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 2;
     String string = serialized.getString(1);
     assert !string.isEmpty();
@@ -44,7 +44,7 @@ public class StringHelper implements ListHelper<String> {
   public StringBuilder serialize(String values) {
     StringBuilder sb = new StringBuilder();
     sb.append('[');
-    sb.append(TYPE).append(",\'").append(values).append('\'');
+    sb.append(TYPE).append(",\"").append(values).append('"');
     sb.append(']');
     return sb;
   }
