@@ -82,13 +82,13 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
   @Override
   public List<T> redo() {
     Pair<List<T>, List<T>> redoPlus = redoPlus();
-    return redoPlus == null ? null : redoPlus.first;
+    return redoPlus.first;
   }
 
   @Override
   public Pair<List<T>, List<T>> redoPlus() {
     if (!canRedo()) {
-      return null;
+      throw new UnsupportedOperationException("Redo stack is empty.");
     }
     Pair<List<T>, List<T>> pair = redoStack.pop();
     undoStack.checkpoint();
@@ -102,7 +102,7 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
   @Override
   public List<T> undo() {
     Pair<List<T>, List<T>> undoPlus = undoPlus();
-    return undoPlus == null ? null : undoPlus.first;
+    return undoPlus.first;
   }
 
   @Override
@@ -115,7 +115,7 @@ public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
   @Override
   public Pair<List<T>, List<T>> undoPlus() {
     if (!canUndo()) {
-      return null;
+      throw new UnsupportedOperationException("Undo stack is empty.");
     }
     Pair<List<T>, List<T>> pair = undoStack.pop();
     redoStack.checkpoint();

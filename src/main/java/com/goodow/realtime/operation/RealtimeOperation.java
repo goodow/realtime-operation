@@ -97,10 +97,12 @@ public class RealtimeOperation implements Operation<Object> {
     List<Operation<?>> ops = new ArrayList<Operation<?>>(size);
     for (int i = size - 1; i >= 0; i--) {
       Operation<?> invertOp = operations.get(i).invert();
-      assert invertOp != null;
-      ops.add(invertOp);
+      // assert invertOp != null;
+      if (invertOp != null) {
+        ops.add(invertOp);
+      }
     }
-    return new RealtimeOperation(userId, sessionId, ops);
+    return ops.isEmpty() ? null : new RealtimeOperation(userId, sessionId, ops);
   }
 
   @Override

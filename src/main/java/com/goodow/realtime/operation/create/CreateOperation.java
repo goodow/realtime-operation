@@ -43,7 +43,8 @@ public class CreateOperation extends AbstractOperation<Void> {
 
   @Override
   public AbstractOperation<Void> invert() {
-    throw new UnsupportedOperationException();
+    return null;
+    // throw new UnsupportedOperationException();
   }
 
   @Override
