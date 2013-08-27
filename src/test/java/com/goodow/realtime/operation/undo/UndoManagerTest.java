@@ -266,7 +266,8 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert(5, "a"));
   }
 
-  <T extends Operation<?>> void equal(List<T> ops, T... expected) {
+  @SafeVarargs
+  final <T extends Operation<?>> void equal(List<T> ops, T... expected) {
     assertEquals(expected.length, ops.size());
     int i = 0;
     for (Operation<?> op : expected) {

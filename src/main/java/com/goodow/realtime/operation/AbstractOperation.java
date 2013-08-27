@@ -81,7 +81,8 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return Pair.of(transformedClientOps, transformedServerOps);
   }
 
-  protected <O> O[] asArray(O... operations) {
+  @SafeVarargs
+  protected final <O> O[] asArray(O... operations) {
     return operations;
   }
 

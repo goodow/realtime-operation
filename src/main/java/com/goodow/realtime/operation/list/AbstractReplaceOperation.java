@@ -37,7 +37,6 @@ public abstract class AbstractReplaceOperation<T> extends AbstractListOperation<
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public AbstractReplaceOperation<T>[] transformWith(AbstractOperation<ListTarget<T>> operation,
       boolean arrivedAfter) {
     assert operation instanceof AbstractListOperation && isSameId(operation);

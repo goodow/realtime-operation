@@ -35,7 +35,6 @@ public abstract class AbstractInsertOperation<T> extends AbstractListOperation<T
     return index;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public AbstractInsertOperation<T>[] transformWith(AbstractOperation<ListTarget<T>> operation,
       boolean arrivedAfter) {

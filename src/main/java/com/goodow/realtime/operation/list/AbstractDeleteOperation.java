@@ -42,7 +42,6 @@ public abstract class AbstractDeleteOperation<T> extends AbstractListOperation<T
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public AbstractDeleteOperation<T>[] transformWith(AbstractOperation<ListTarget<T>> operation,
       boolean arrivedAfter) {

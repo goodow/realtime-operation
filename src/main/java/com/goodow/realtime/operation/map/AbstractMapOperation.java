@@ -36,7 +36,6 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
     target.set(key, newValue);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public AbstractMapOperation<T>[] transformWith(AbstractOperation<MapTarget<T>> operation,
       boolean arrivedAfter) {
