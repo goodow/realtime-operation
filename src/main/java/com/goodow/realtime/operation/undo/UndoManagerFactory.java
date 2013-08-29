@@ -16,6 +16,7 @@ package com.goodow.realtime.operation.undo;
 import com.goodow.realtime.operation.RealtimeOperation;
 import com.goodow.realtime.operation.Transformer;
 import com.goodow.realtime.operation.TransformerImpl;
+import com.goodow.realtime.operation.util.Pair;
 
 import java.util.List;
 
@@ -23,7 +24,49 @@ import java.util.List;
  * A factory for creating undo managers for document operations.
  */
 public final class UndoManagerFactory {
+  private static final UndoManagerPlus<?> NOP_IMPL = new UndoManagerPlus<Object>() {
+    @Override
+    public boolean canRedo() {
+      return false;
+    }
 
+    @Override
+    public boolean canUndo() {
+      return false;
+    }
+
+    @Override
+    public void checkpoint() {
+    }
+
+    @Override
+    public void nonUndoableOp(Object op) {
+    }
+
+    @Override
+    public List<Object> redo() {
+      return redoPlus().first;
+    }
+
+    @Override
+    public Pair<List<Object>, List<Object>> redoPlus() {
+      throw new UnsupportedOperationException("No Redo For You!");
+    }
+
+    @Override
+    public List<Object> undo() {
+      return undoPlus().first;
+    }
+
+    @Override
+    public void undoableOp(Object op) {
+    }
+
+    @Override
+    public Pair<List<Object>, List<Object>> undoPlus() {
+      throw new UnsupportedOperationException("No Undo For You!");
+    }
+  };
   private static final UndoManagerImpl.Algorithms<RealtimeOperation> algorithms =
       new UndoManagerImpl.Algorithms<RealtimeOperation>() {
         Transformer<RealtimeOperation> transformer = new TransformerImpl<RealtimeOperation>();
@@ -49,4 +92,11 @@ public final class UndoManagerFactory {
     return new UndoManagerImpl<RealtimeOperation>(algorithms);
   }
 
+  /**
+   * Implementation that does almost nothing
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> UndoManagerPlus<T> getNoOp() {
+    return (UndoManagerPlus<T>) NOP_IMPL;
+  }
 }
