@@ -13,7 +13,6 @@
  */
 package com.goodow.realtime.operation.undo;
 
-import com.goodow.realtime.operation.Operation;
 import com.goodow.realtime.operation.RealtimeOperation;
 import com.goodow.realtime.operation.list.string.StringDeleteOperation;
 import com.goodow.realtime.operation.list.string.StringInsertOperation;
@@ -266,11 +265,10 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert(5, "a"));
   }
 
-  @SafeVarargs
-  final <T extends Operation<?>> void equal(List<T> ops, T... expected) {
+  final void equal(List<RealtimeOperation> ops, RealtimeOperation... expected) {
     assertEquals(expected.length, ops.size());
     int i = 0;
-    for (Operation<?> op : expected) {
+    for (RealtimeOperation op : expected) {
       assertEquals(op, ops.get(i));
       assertEquals(op.invert(), ops.get(i).invert());
       i++;
