@@ -13,14 +13,13 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.util.Pair;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonType;
 
 public abstract class AbstractOperation<T> implements Operation<T> {
   protected static String parseId(JsonArray serialized) {
-    return serialized.get(1).getType() == JsonType.NULL ? null : serialized.getString(1);
+    return serialized.getString(1);
   }
 
   public final int type;
@@ -48,18 +47,17 @@ public abstract class AbstractOperation<T> implements Operation<T> {
   public abstract AbstractOperation<T> invert();
 
   @Override
+  public JsonArray toJson() {
+    JsonArray json = Json.createArray();
+    json.push(type);
+    json.push(id);
+    toJson(json);
+    return json;
+  }
+
+  @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder().append('[');
-    sb.append(type).append(',');
-    if (id == null) {
-      sb.append((String) null);
-    } else {
-      sb.append('"').append(id).append('"');
-    }
-    sb.append(',');
-    toString(sb);
-    sb.append(']');
-    return sb.toString();
+    return toJson().toJsonString();
   }
 
   /**
@@ -91,5 +89,5 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return id == null ? id2 == null : id.equals(id2);
   }
 
-  protected abstract void toString(StringBuilder sb);
+  protected abstract void toJson(JsonArray json);
 }

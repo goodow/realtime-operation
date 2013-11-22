@@ -13,6 +13,8 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.util.Pair;
 
 import java.util.ArrayList;
@@ -106,8 +108,17 @@ public class RealtimeOperation implements Operation<Object> {
   }
 
   @Override
+  public JsonArray toJson() {
+    JsonArray json = Json.createArray();
+    for (Operation<?> op : operations) {
+      json.push(op.toJson());
+    }
+    return json;
+  }
+
+  @Override
   public String toString() {
-    return operations.toString();
+    return toJson().toJsonString();
   }
 
   @Override

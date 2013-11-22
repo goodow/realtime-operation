@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.create;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
-
-import elemental.json.JsonArray;
 
 public class CreateOperation extends AbstractOperation<Void> {
   public static final int TYPE = 7;
@@ -53,7 +52,7 @@ public class CreateOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  protected void toString(StringBuilder sb) {
-    sb.append(subType);
+  protected void toJson(JsonArray json) {
+    json.push(subType);
   }
 }

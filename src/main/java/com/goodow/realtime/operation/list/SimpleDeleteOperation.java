@@ -13,10 +13,9 @@
  */
 package com.goodow.realtime.operation.list;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.list.json.JsonHelper;
 import com.goodow.realtime.operation.list.string.StringHelper;
-
-import elemental.json.JsonArray;
 
 public class SimpleDeleteOperation<T> extends AbstractDeleteOperation<T> implements ListHelper<T> {
   public static <T> SimpleDeleteOperation<T> parse(JsonArray serialized) {
@@ -57,11 +56,6 @@ public class SimpleDeleteOperation<T> extends AbstractDeleteOperation<T> impleme
   }
 
   @Override
-  public StringBuilder serialize(T values) {
-    return getDelegate(values).serialize(values);
-  }
-
-  @Override
   public T subset(T values, int startIndex, int length) {
     return getDelegate(values).subset(values, startIndex, length);
   }
@@ -75,6 +69,11 @@ public class SimpleDeleteOperation<T> extends AbstractDeleteOperation<T> impleme
   public T subset(T values0, int startIndex0, int length0, T values1, int startIndex1, int length1) {
     return getDelegate(values0)
         .subset(values0, startIndex0, length0, values1, startIndex1, length1);
+  }
+
+  @Override
+  public JsonArray toJson(T values) {
+    return getDelegate(values).toJson(values);
   }
 
   @Override

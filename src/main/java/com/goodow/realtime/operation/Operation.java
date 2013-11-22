@@ -13,6 +13,7 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.util.Pair;
 
 /**
@@ -31,8 +32,7 @@ public interface Operation<T> {
 
   Operation<T> invert();
 
-  @Override
-  String toString();
+  JsonElement toJson();
 
   Pair<? extends Operation<T>[], ? extends Operation<T>[]> transformWith(
       Operation<T> serverOperation);

@@ -13,41 +13,41 @@
  */
 package com.goodow.realtime.operation.map;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonElement;
+import com.goodow.realtime.json.JsonObject;
 import com.goodow.realtime.operation.AbstractOperation;
 import com.goodow.realtime.operation.map.json.JsonMapOperation;
 
 import junit.framework.TestCase;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 public class MapOperationTest extends TestCase {
-  private AbstractMapOperation<JsonValue> expected;
+  private AbstractMapOperation<JsonElement> expected;
 
   public void testParseFromJson() {
-    AbstractMapOperation<JsonValue> op =
-        new JsonMapOperation(null, "key", null, Json.create("abc"));
-    assertEquals(op, JsonMapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    AbstractMapOperation<JsonElement> op =
+        new JsonMapOperation(null, "key", null, Json.<JsonObject> parse("{\"k\":\"abc\"}"));
+    assertEquals(op, JsonMapOperation.parse(Json.<JsonArray> parse(op.toString())));
 
     JsonObject obj = Json.createObject();
-    obj.put("k", true);
+    obj.set("k", true);
 
     op = new JsonMapOperation("id", "key", Json.createArray(), obj);
-    assertEquals(op, JsonMapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    assertEquals(op, JsonMapOperation.parse(Json.<JsonArray> parse(op.toString())));
 
     op = new JsonMapOperation("id", "key", obj, Json.createArray());
-    assertEquals(op, JsonMapOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    assertEquals(op, JsonMapOperation.parse(Json.<JsonArray> parse(op.toString())));
   }
 
   public void testTransformDifferentKey() {
-    AbstractMapOperation<JsonValue> op1 =
-        new JsonMapOperation(null, "key1", null, Json.create("abc"));
-    AbstractMapOperation<JsonValue> op2 =
-        new JsonMapOperation(null, "key2", Json.create(3), Json.create(true));
+    AbstractMapOperation<JsonElement> op1 =
+        new JsonMapOperation(null, "key1", null, Json.<JsonObject> parse("{\"k\":\"abc\"}"));
+    AbstractMapOperation<JsonElement> op2 =
+        new JsonMapOperation(null, "key2", Json.<JsonObject> parse("{\"k\":3}"), Json
+            .<JsonObject> parse("{\"k\":true}"));
 
-    AbstractMapOperation<JsonValue>[] transformedOp = op1.transformWith(op2, true);
+    AbstractMapOperation<JsonElement>[] transformedOp = op1.transformWith(op2, true);
     assertSame(op1, transformedOp[0]);
     transformedOp = op1.transformWith(op2, false);
     assertSame(op1, transformedOp[0]);
@@ -59,32 +59,38 @@ public class MapOperationTest extends TestCase {
   }
 
   public void testTransformNoOp() {
-    AbstractMapOperation<JsonValue> op1 =
-        new JsonMapOperation(null, "key", null, Json.create("abc"));
-    AbstractMapOperation<JsonValue> op2 =
-        new JsonMapOperation(null, "key", Json.create(3), Json.create("abc"));
+    AbstractMapOperation<JsonElement> op1 =
+        new JsonMapOperation(null, "key", null, Json.<JsonObject> parse("{\"k\":\"abc\"}"));
+    AbstractMapOperation<JsonElement> op2 =
+        new JsonMapOperation(null, "key", Json.<JsonObject> parse("{\"k\":3}"), Json
+            .<JsonObject> parse("{\"k\":\"abc\"}"));
 
-    AbstractMapOperation<JsonValue>[] transformedOp = op1.transformWith(op2, true);
+    AbstractMapOperation<JsonElement>[] transformedOp = op1.transformWith(op2, true);
     assertNull(transformedOp);
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
   }
 
   public void testTransformSameKey() {
-    AbstractMapOperation<JsonValue> op1 =
-        new JsonMapOperation(null, "key", null, Json.create("abc"));
-    AbstractMapOperation<JsonValue> op2 =
-        new JsonMapOperation(null, "key", Json.create(3), Json.create(true));
+    AbstractMapOperation<JsonElement> op1 =
+        new JsonMapOperation(null, "key", null, Json.<JsonObject> parse("{\"k\":\"abc\"}"));
+    AbstractMapOperation<JsonElement> op2 =
+        new JsonMapOperation(null, "key", Json.<JsonObject> parse("{\"k\":3}"), Json
+            .<JsonObject> parse("{\"k\":true}"));
 
-    AbstractMapOperation<JsonValue>[] transformedOp = op1.transformWith(op2, true);
-    expected = new JsonMapOperation(null, "key", Json.create(true), Json.create("abc"));
+    AbstractMapOperation<JsonElement>[] transformedOp = op1.transformWith(op2, true);
+    expected =
+        new JsonMapOperation(null, "key", Json.<JsonObject> parse("{\"k\":true}"), Json
+            .<JsonObject> parse("{\"k\":\"abc\"}"));
     equals(expected, transformedOp[0]);
 
     transformedOp = op1.transformWith(op2, false);
     assertNull(transformedOp);
 
     transformedOp = op2.transformWith(op1, true);
-    expected = new JsonMapOperation(null, "key", Json.create("abc"), Json.create(true));
+    expected =
+        new JsonMapOperation(null, "key", Json.<JsonObject> parse("{\"k\":\"abc\"}"), Json
+            .<JsonObject> parse("{\"k\":true}"));
     equals(expected, transformedOp[0]);
 
     transformedOp = op2.transformWith(op1, false);

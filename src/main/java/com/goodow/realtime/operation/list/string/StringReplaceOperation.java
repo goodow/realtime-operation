@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.list.string;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.list.AbstractReplaceOperation;
-
-import elemental.json.JsonArray;
 
 public class StringReplaceOperation extends AbstractReplaceOperation<String> {
   public static StringReplaceOperation parse(JsonArray serialized) {

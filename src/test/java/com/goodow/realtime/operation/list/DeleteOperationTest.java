@@ -13,14 +13,13 @@
  */
 package com.goodow.realtime.operation.list;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
 import com.goodow.realtime.operation.list.string.StringInsertOperation;
 import com.goodow.realtime.operation.list.string.StringReplaceOperation;
 
 import junit.framework.TestCase;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
 
 public class DeleteOperationTest extends TestCase {
   private AbstractDeleteOperation<String> expected0;
@@ -202,9 +201,9 @@ public class DeleteOperationTest extends TestCase {
 
   public void testParseFromJson() {
     AbstractDeleteOperation<String> op = new SimpleDeleteOperation<String>(null, 2, "123");
-    assertEquals(op, SimpleDeleteOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    assertEquals(op, SimpleDeleteOperation.parse(Json.<JsonArray> parse(op.toString())));
     op = new SimpleDeleteOperation<String>("id", 0, "true");
-    assertEquals(op, SimpleDeleteOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    assertEquals(op, SimpleDeleteOperation.parse(Json.<JsonArray> parse(op.toString())));
   }
 
   public void testTransformIndexReference() {

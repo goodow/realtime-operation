@@ -13,19 +13,18 @@
  */
 package com.goodow.realtime.operation.list.json;
 
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.AbstractInsertOperation;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
-
-public class JsonInsertOperation extends AbstractInsertOperation<JsonValue[]> {
+public class JsonInsertOperation extends AbstractInsertOperation<JsonElement[]> {
   public static JsonInsertOperation parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    JsonValue[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
+    JsonElement[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new JsonInsertOperation(parseId(serialized), parseStartIndex(serialized), values);
   }
 
-  public JsonInsertOperation(String id, int startIndex, JsonValue[] values) {
+  public JsonInsertOperation(String id, int startIndex, JsonElement[] values) {
     super(id, startIndex, values);
   }
 
@@ -35,7 +34,7 @@ public class JsonInsertOperation extends AbstractInsertOperation<JsonValue[]> {
   }
 
   @Override
-  protected JsonInsertOperation create(int startIndex, JsonValue[] values) {
+  protected JsonInsertOperation create(int startIndex, JsonElement[] values) {
     return new JsonInsertOperation(id, startIndex, values);
   }
 

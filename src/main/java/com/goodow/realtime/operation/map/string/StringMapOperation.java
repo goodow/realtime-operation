@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.map.string;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.map.AbstractMapOperation;
-
-import elemental.json.JsonArray;
 
 public class StringMapOperation extends AbstractMapOperation<String> {
   public static StringMapOperation parse(JsonArray serialized) {
@@ -40,10 +39,10 @@ public class StringMapOperation extends AbstractMapOperation<String> {
   }
 
   @Override
-  protected void toString(StringBuilder sb) {
-    super.toString(sb);
+  protected void toJson(JsonArray json) {
+    super.toJson(json);
     if (newValue != null) {
-      sb.append(",\"").append(newValue).append('"');
+      json.push(newValue);
     }
   }
 }

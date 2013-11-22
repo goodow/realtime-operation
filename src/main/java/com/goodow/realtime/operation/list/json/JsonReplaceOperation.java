@@ -13,20 +13,19 @@
  */
 package com.goodow.realtime.operation.list.json;
 
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.AbstractReplaceOperation;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
-
-public class JsonReplaceOperation extends AbstractReplaceOperation<JsonValue[]> {
+public class JsonReplaceOperation extends AbstractReplaceOperation<JsonElement[]> {
   public static JsonReplaceOperation parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    JsonValue[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
+    JsonElement[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new JsonReplaceOperation(parseId(serialized), parseStartIndex(serialized), null, values);
   }
 
-  public JsonReplaceOperation(String id, int startIndex, JsonValue[] oldValues,
-      JsonValue[] newValues) {
+  public JsonReplaceOperation(String id, int startIndex, JsonElement[] oldValues,
+      JsonElement[] newValues) {
     super(id, startIndex, oldValues, newValues);
   }
 
@@ -37,7 +36,8 @@ public class JsonReplaceOperation extends AbstractReplaceOperation<JsonValue[]> 
   }
 
   @Override
-  protected JsonReplaceOperation create(int startIndex, JsonValue[] oldValues, JsonValue[] newValues) {
+  protected JsonReplaceOperation create(int startIndex, JsonElement[] oldValues,
+      JsonElement[] newValues) {
     return new JsonReplaceOperation(id, startIndex, oldValues, newValues);
   }
 

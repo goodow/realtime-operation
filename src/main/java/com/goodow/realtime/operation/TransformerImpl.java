@@ -13,6 +13,7 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.create.CreateOperation;
 import com.goodow.realtime.operation.cursor.ReferenceShiftedOperation;
 import com.goodow.realtime.operation.list.AbstractDeleteOperation;
@@ -31,9 +32,6 @@ import com.goodow.realtime.operation.util.Pair;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 public class TransformerImpl<T extends Operation<?>> implements Transformer<T> {
 
@@ -61,7 +59,7 @@ public class TransformerImpl<T extends Operation<?>> implements Transformer<T> {
             break;
           default:
             throw new UnsupportedOperationException("Unknow insert operation sub-type: "
-                + serialized.toJson());
+                + serialized.toJsonString());
         }
         break;
       case AbstractDeleteOperation.TYPE:
@@ -74,15 +72,15 @@ public class TransformerImpl<T extends Operation<?>> implements Transformer<T> {
         op = ReferenceShiftedOperation.parse(serialized);
         break;
       default:
-        throw new UnsupportedOperationException("Unknow operation type: " + serialized.toJson());
+        throw new UnsupportedOperationException("Unknow operation type: "
+            + serialized.toJsonString());
     }
     return op;
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public T createOperation(String userId, String sessionId, JsonValue serialized) {
-    JsonArray ops = (JsonArray) serialized;
+  public T createOperation(String userId, String sessionId, JsonArray ops) {
     int length = ops.length();
     assert length > 0;
     List<AbstractOperation<?>> operations = new ArrayList<AbstractOperation<?>>(length);

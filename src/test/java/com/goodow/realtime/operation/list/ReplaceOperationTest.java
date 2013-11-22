@@ -13,6 +13,8 @@
  */
 package com.goodow.realtime.operation.list;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
 import com.goodow.realtime.operation.list.string.StringDeleteOperation;
 import com.goodow.realtime.operation.list.string.StringInsertOperation;
@@ -20,18 +22,15 @@ import com.goodow.realtime.operation.list.string.StringReplaceOperation;
 
 import junit.framework.TestCase;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-
 public class ReplaceOperationTest extends TestCase {
   private AbstractOperation<?> expected0;
   private AbstractOperation<?> expected1;
 
   public void testParseFromJson() {
     AbstractReplaceOperation<String> op = new StringReplaceOperation(null, 2, "abc", "123");
-    assertEquals(op, StringReplaceOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    assertEquals(op, StringReplaceOperation.parse(Json.<JsonArray> parse(op.toString())));
     op = new StringReplaceOperation("id", 0, "abcd", "true");
-    assertEquals(op, StringReplaceOperation.parse((JsonArray) Json.instance().parse(op.toString())));
+    assertEquals(op, StringReplaceOperation.parse(Json.<JsonArray> parse(op.toString())));
   }
 
   public void testReplaceVsDelete() {

@@ -13,37 +13,37 @@
  */
 package com.goodow.realtime.operation.list.json;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.ListHelper;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
-
-public class JsonHelper implements ListHelper<JsonValue[]> {
+public class JsonHelper implements ListHelper<JsonElement[]> {
   public static final int TYPE = 0;
   static final JsonHelper INSTANCE = new JsonHelper();
 
   @Override
-  public int length(JsonValue[] values) {
+  public int length(JsonElement[] values) {
     return values.length;
   }
 
   @Override
-  public JsonValue[] parseValues(JsonArray serialized) {
+  public JsonElement[] parseValues(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE;
     int length = serialized.length();
     assert length >= 2;
-    JsonValue[] values = create(length - 1);
+    JsonElement[] values = create(length - 1);
     for (int i = 1; i < length; i++) {
-      values[i - 1] = serialized.get(i);
+      values[i - 1] = serialized.<JsonElement> get(i);
     }
     return values;
   }
 
   @Override
-  public JsonValue[] replaceWith(JsonValue[] values, int startIndex, int length,
-      JsonValue[] replacement) {
+  public JsonElement[] replaceWith(JsonElement[] values, int startIndex, int length,
+      JsonElement[] replacement) {
     int len = replacement == null ? 0 : replacement.length;
-    JsonValue[] array = create(values.length - length + len);
+    JsonElement[] array = create(values.length - length + len);
     System.arraycopy(values, 0, array, 0, startIndex);
     if (replacement != null) {
       System.arraycopy(replacement, 0, array, startIndex, len);
@@ -54,40 +54,38 @@ public class JsonHelper implements ListHelper<JsonValue[]> {
   }
 
   @Override
-  public StringBuilder serialize(JsonValue[] values) {
-    StringBuilder sb = new StringBuilder();
-    sb.append('[');
-    sb.append(TYPE);
-    for (JsonValue value : values) {
-      sb.append(',').append(value == null ? (String) null : value.toJson());
-    }
-    sb.append(']');
-    return sb;
-  }
-
-  @Override
-  public JsonValue[] subset(JsonValue[] values, int startIndex, int length) {
-    JsonValue[] array = create(length);
+  public JsonElement[] subset(JsonElement[] values, int startIndex, int length) {
+    JsonElement[] array = create(length);
     System.arraycopy(values, startIndex, array, 0, length);
     return array;
   }
 
   @Override
-  public JsonValue[] subset(JsonValue[] values, int startIndex0, int length0, int startIndex1,
+  public JsonElement[] subset(JsonElement[] values, int startIndex0, int length0, int startIndex1,
       int length1) {
     return subset(values, startIndex0, length0, values, startIndex1, length1);
   }
 
   @Override
-  public JsonValue[] subset(JsonValue[] values0, int startIndex0, int length0, JsonValue[] values1,
-      int startIndex1, int length1) {
-    JsonValue[] array = create(length0 + length1);
+  public JsonElement[] subset(JsonElement[] values0, int startIndex0, int length0,
+      JsonElement[] values1, int startIndex1, int length1) {
+    JsonElement[] array = create(length0 + length1);
     System.arraycopy(values0, startIndex0, array, 0, length0);
     System.arraycopy(values1, startIndex1, array, length0, length1);
     return array;
   }
 
-  protected JsonValue[] create(int length) {
-    return new JsonValue[length];
+  @Override
+  public JsonArray toJson(JsonElement[] values) {
+    JsonArray json = Json.createArray();
+    json.push(TYPE);
+    for (JsonElement value : values) {
+      json.push(value);
+    }
+    return json;
+  }
+
+  protected JsonElement[] create(int length) {
+    return new JsonElement[length];
   }
 }

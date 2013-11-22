@@ -13,6 +13,7 @@
  */
 package com.goodow.realtime.operation.number;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
 
 public class NumberAddOperation extends AbstractOperation<NumberTarget> {
@@ -45,7 +46,7 @@ public class NumberAddOperation extends AbstractOperation<NumberTarget> {
   }
 
   @Override
-  protected void toString(StringBuilder sb) {
-    sb.append(number);
+  protected void toJson(JsonArray json) {
+    json.push(number);
   }
 }

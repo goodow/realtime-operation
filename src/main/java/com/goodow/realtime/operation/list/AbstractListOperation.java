@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.list;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
-
-import elemental.json.JsonArray;
 
 public abstract class AbstractListOperation<T> extends AbstractOperation<ListTarget<T>> {
   protected static int parseStartIndex(JsonArray serialized) {
@@ -48,12 +47,12 @@ public abstract class AbstractListOperation<T> extends AbstractOperation<ListTar
   protected abstract ListHelper<T> getHelper();
 
   @Override
-  protected void toString(StringBuilder sb) {
-    sb.append(startIndex).append(',');
+  protected void toJson(JsonArray json) {
+    json.push(startIndex);
     if (this instanceof AbstractDeleteOperation) {
-      sb.append(length);
+      json.push(length);
     } else {
-      sb.append(getHelper().serialize(values));
+      json.push(getHelper().toJson(values));
     }
   }
 }

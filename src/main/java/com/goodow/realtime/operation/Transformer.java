@@ -13,18 +13,17 @@
  */
 package com.goodow.realtime.operation;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.util.Pair;
 
 import java.util.List;
-
-import elemental.json.JsonValue;
 
 public interface Transformer<T> {
   List<T> compact(List<T> operations);
 
   // OperationSink<O> createSnapshot(JsonValue serialized);
 
-  T createOperation(String userId, String sessionId, JsonValue serialized);
+  T createOperation(String userId, String sessionId, JsonArray operations);
 
   Pair<List<T>, List<T>> transform(List<T> clientOps, List<T> serverOps);
 

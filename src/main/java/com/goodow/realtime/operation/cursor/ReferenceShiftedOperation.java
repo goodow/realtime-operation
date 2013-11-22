@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.cursor;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
-
-import elemental.json.JsonArray;
 
 public class ReferenceShiftedOperation extends AbstractOperation<Void> {
   public static final int TYPE = 25;
@@ -62,8 +61,10 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  protected void toString(StringBuilder sb) {
-    sb.append('"').append(referencedObjectId).append("\",").append(newIndex).append(',');
-    sb.append(canBeDeleted).append(',').append(oldIndex);
+  protected void toJson(JsonArray json) {
+    json.push(referencedObjectId);
+    json.push(newIndex);
+    json.push(canBeDeleted);
+    json.push(oldIndex);
   }
 }

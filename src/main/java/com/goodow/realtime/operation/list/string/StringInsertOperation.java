@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.list.string;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.list.AbstractInsertOperation;
-
-import elemental.json.JsonArray;
 
 public class StringInsertOperation extends AbstractInsertOperation<String> {
   public static StringInsertOperation parse(JsonArray serialized) {

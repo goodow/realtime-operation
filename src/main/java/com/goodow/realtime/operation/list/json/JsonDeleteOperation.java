@@ -13,12 +13,11 @@
  */
 package com.goodow.realtime.operation.list.json;
 
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.AbstractDeleteOperation;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
-
-public class JsonDeleteOperation extends AbstractDeleteOperation<JsonValue[]> {
+public class JsonDeleteOperation extends AbstractDeleteOperation<JsonElement[]> {
   public static JsonDeleteOperation parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
     return new JsonDeleteOperation(parseId(serialized), parseStartIndex(serialized),
@@ -29,7 +28,7 @@ public class JsonDeleteOperation extends AbstractDeleteOperation<JsonValue[]> {
     super(id, startIndex, length);
   }
 
-  public JsonDeleteOperation(String id, int startIndex, JsonValue[] values) {
+  public JsonDeleteOperation(String id, int startIndex, JsonElement[] values) {
     super(id, startIndex, values);
   }
 
@@ -45,7 +44,7 @@ public class JsonDeleteOperation extends AbstractDeleteOperation<JsonValue[]> {
   }
 
   @Override
-  protected JsonDeleteOperation create(int startIndex, JsonValue[] values) {
+  protected JsonDeleteOperation create(int startIndex, JsonElement[] values) {
     return new JsonDeleteOperation(id, startIndex, values);
   }
 

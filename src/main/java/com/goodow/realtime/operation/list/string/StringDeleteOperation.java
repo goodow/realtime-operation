@@ -13,9 +13,8 @@
  */
 package com.goodow.realtime.operation.list.string;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.list.AbstractDeleteOperation;
-
-import elemental.json.JsonArray;
 
 public class StringDeleteOperation extends AbstractDeleteOperation<String> {
   public static StringDeleteOperation parse(JsonArray serialized) {

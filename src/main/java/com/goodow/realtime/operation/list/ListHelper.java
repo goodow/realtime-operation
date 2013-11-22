@@ -13,7 +13,7 @@
  */
 package com.goodow.realtime.operation.list;
 
-import elemental.json.JsonArray;
+import com.goodow.realtime.json.JsonArray;
 
 public interface ListHelper<T> {
   int length(T values);
@@ -22,11 +22,11 @@ public interface ListHelper<T> {
 
   T replaceWith(T values, int startIndex, int length, T replacement);
 
-  StringBuilder serialize(T values);
-
   T subset(T values, int startIndex, int length);
 
   T subset(T values, int startIndex0, int length0, int startIndex1, int length1);
 
   T subset(T values0, int startIndex0, int length0, T values1, int startIndex1, int length1);
+
+  JsonArray toJson(T values);
 }

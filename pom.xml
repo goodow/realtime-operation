@@ -3,16 +3,36 @@
   <parent>
     <groupId>com.goodow.realtime</groupId>
     <artifactId>realtime-parent</artifactId>
-    <version>0.3.0</version>
+    <version>0.5.5-SNAPSHOT</version>
   </parent>
   <artifactId>realtime-operation</artifactId>
   <url>https://github.com/goodow/realtime-operation/</url>
   <inceptionYear>2013</inceptionYear>
+
+  <properties>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+  </properties>
+  
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
   
   <dependencies>
     <dependency>
-      <groupId>com.goodow.gwt</groupId>
-      <artifactId>gwt-elemental</artifactId>
+      <groupId>com.goodow.realtime</groupId>
+      <artifactId>realtime-json</artifactId>
+      <version>${project.version}</version>
     </dependency>
     
     <!-- Test -->

@@ -13,29 +13,25 @@
  */
 package com.goodow.realtime.operation.map.json;
 
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.map.AbstractMapOperation;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
-
-public class JsonMapOperation extends AbstractMapOperation<JsonValue> {
-  public static boolean jsonEquals(JsonValue value0, JsonValue value1) {
-    return value0 == null ? value1 == null : (value1 == null ? false : value0.toJson().equals(
-        value1.toJson()));
+public class JsonMapOperation extends AbstractMapOperation<JsonElement> {
+  public static boolean jsonEquals(JsonElement value0, JsonElement value1) {
+    return value0 == null ? value1 == null : (value1 == null ? false : value0.toJsonString()
+        .equals(value1.toJsonString()));
   }
 
   public static JsonMapOperation parse(JsonArray serialized) {
     int length = serialized.length();
     assert serialized.getNumber(0) == TYPE && (length == 3 || length == 4);
     return new JsonMapOperation(parseId(serialized), serialized.getString(2), null, length == 3
-        ? null : serialized.get(3));
+        ? null : serialized.<JsonElement> get(3));
   }
 
-  public JsonMapOperation(String id, String key, JsonValue oldValue, JsonValue newValue) {
+  public JsonMapOperation(String id, String key, JsonElement oldValue, JsonElement newValue) {
     super(id, key, oldValue, newValue);
-    assert oldValue == null || oldValue.getType() != JsonType.NULL;
-    assert newValue == null || newValue.getType() != JsonType.NULL;
   }
 
   @Override
@@ -44,20 +40,21 @@ public class JsonMapOperation extends AbstractMapOperation<JsonValue> {
   }
 
   @Override
-  protected JsonMapOperation create(String id, String key, JsonValue oldValue, JsonValue newValue) {
+  protected JsonMapOperation create(String id, String key, JsonElement oldValue,
+      JsonElement newValue) {
     return new JsonMapOperation(id, key, oldValue, newValue);
   }
 
   @Override
-  protected boolean equals(JsonValue value0, JsonValue value1) {
+  protected boolean equals(JsonElement value0, JsonElement value1) {
     return jsonEquals(value0, value1);
   }
 
   @Override
-  protected void toString(StringBuilder sb) {
-    super.toString(sb);
+  protected void toJson(JsonArray json) {
+    super.toJson(json);
     if (newValue != null) {
-      sb.append(',').append(newValue.toJson());
+      json.push(newValue);
     }
   }
 }

@@ -13,9 +13,9 @@
  */
 package com.goodow.realtime.operation.list.string;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.list.ListHelper;
-
-import elemental.json.JsonArray;
 
 public class StringHelper implements ListHelper<String> {
   public static final int TYPE = 1;
@@ -41,15 +41,6 @@ public class StringHelper implements ListHelper<String> {
   }
 
   @Override
-  public StringBuilder serialize(String values) {
-    StringBuilder sb = new StringBuilder();
-    sb.append('[');
-    sb.append(TYPE).append(",\"").append(values).append('"');
-    sb.append(']');
-    return sb;
-  }
-
-  @Override
   public String subset(String values, int startIndex, int length) {
     return values.substring(startIndex, startIndex + length);
   }
@@ -63,5 +54,13 @@ public class StringHelper implements ListHelper<String> {
   public String subset(String values0, int startIndex0, int length0, String values1,
       int startIndex1, int length1) {
     return subset(values0, startIndex0, length0) + subset(values1, startIndex1, length1);
+  }
+
+  @Override
+  public JsonArray toJson(String values) {
+    JsonArray json = Json.createArray();
+    json.push(TYPE);
+    json.push(values);
+    return json;
   }
 }

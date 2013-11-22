@@ -13,6 +13,7 @@
  */
 package com.goodow.realtime.operation.map;
 
+import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.AbstractOperation;
 
 public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarget<T>> {
@@ -57,7 +58,7 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
   }
 
   @Override
-  protected void toString(StringBuilder sb) {
-    sb.append('"').append(key).append('"');
+  protected void toJson(JsonArray json) {
+    json.push(key);
   }
 }
