@@ -15,17 +15,13 @@ package com.goodow.realtime.operation.undo;
 
 import com.goodow.realtime.operation.util.Pair;
 
-import java.util.List;
-
 /**
  * An <code>UndoManager</code> that provides versions of the undo and redo methods which return more
  * information.
  * 
- * 
- * @param <T> The type of operations.
+ * @param <O> The type of operations.
  */
-public interface UndoManagerPlus<T> extends UndoManager<T> {
-
+public interface UndoManagerPlus<O> extends UndoManager<O> {
   /**
    * Effects a redo. Returns null if there are no operations to redo.
    * 
@@ -37,7 +33,7 @@ public interface UndoManagerPlus<T> extends UndoManager<T> {
    *         NOTE: Returning null is probably slightly harder to use than returning an operation
    *         that does nothing.
    */
-  Pair<List<T>, List<T>> redoPlus();
+  Pair<O, O> redoPlus();
 
   /**
    * Effects an undo. Returns null if there are no operations to undo.
@@ -50,6 +46,6 @@ public interface UndoManagerPlus<T> extends UndoManager<T> {
    *         NOTE: Returning null is probably slightly harder to use than returning an operation
    *         that does nothing.
    */
-  Pair<List<T>, List<T>> undoPlus();
+  Pair<O, O> undoPlus();
 
 }

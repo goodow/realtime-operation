@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Goodow.com
+ * Copyright 2014 Goodow.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,16 +13,14 @@
  */
 package com.goodow.realtime.operation;
 
-import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.json.JsonObject;
-import com.goodow.realtime.operation.util.Pair;
+public abstract class OperationComponent<T> implements Operation<T> {
 
-public interface Transformer<O extends Operation<?>> {
-  O compose(JsonArray operations);
+  @Override
+  public Operation<T> transform(Operation<T> other, boolean applied) {
+    throw new UnsupportedOperationException();
+  }
 
-  // OperationSink<O> createSnapshot(JsonValue snapshotData);
-
-  O createOperation(JsonObject opData);
-
-  Pair<O, O> transform(O operation, O appliedOperation);
+  public OperationComponent<T>[] transformComponent(OperationComponent<T> other, boolean applied) {
+    throw new UnsupportedOperationException();
+  }
 }

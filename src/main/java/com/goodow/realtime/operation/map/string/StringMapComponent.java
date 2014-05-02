@@ -14,28 +14,28 @@
 package com.goodow.realtime.operation.map.string;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.map.AbstractMapOperation;
+import com.goodow.realtime.operation.map.AbstractMapComponent;
 
-public class StringMapOperation extends AbstractMapOperation<String> {
-  public static StringMapOperation parse(JsonArray serialized) {
+public class StringMapComponent extends AbstractMapComponent<String> {
+  public static StringMapComponent parse(JsonArray serialized) {
     int length = serialized.length();
     assert serialized.getNumber(0) == TYPE && (length == 3 || length == 4);
-    return new StringMapOperation(parseId(serialized), serialized.getString(2), null, length == 3
+    return new StringMapComponent(parseId(serialized), serialized.getString(2), null, length == 3
         ? null : serialized.getString(3));
   }
 
-  public StringMapOperation(String id, String key, String oldValue, String newValue) {
+  public StringMapComponent(String id, String key, String oldValue, String newValue) {
     super(id, key, oldValue, newValue);
   }
 
   @Override
-  public StringMapOperation invert() {
-    return new StringMapOperation(id, key, newValue, oldValue);
+  public StringMapComponent invert() {
+    return new StringMapComponent(id, key, newValue, oldValue);
   }
 
   @Override
-  protected StringMapOperation create(String id, String key, String oldValue, String newValue) {
-    return new StringMapOperation(id, key, oldValue, newValue);
+  protected StringMapComponent create(String id, String key, String oldValue, String newValue) {
+    return new StringMapComponent(id, key, oldValue, newValue);
   }
 
   @Override

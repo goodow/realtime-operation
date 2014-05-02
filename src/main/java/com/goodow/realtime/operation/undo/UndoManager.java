@@ -13,16 +13,12 @@
  */
 package com.goodow.realtime.operation.undo;
 
-import java.util.List;
-
 /**
  * An undo manager.
  * 
- * 
- * @param <T> The type of operations.
+ * @param <O> The type of operations.
  */
-public interface UndoManager<T> {
-
+public interface UndoManager<O> {
   /**
    * @return True if the model can currently redo.
    */
@@ -43,26 +39,26 @@ public interface UndoManager<T> {
    * 
    * @param op the operation that should not be undone by any undos
    */
-  void nonUndoableOp(T op);
+  void nonUndoableOp(O op);
 
   /**
    * Effects a redo. Returns null if there are no operations to redo.
    * 
    * @return the operation that will effect a redo
    */
-  List<T> redo();
+  O redo();
 
   /**
    * Effects an undo. Returns null if there are no operations to undo.
    * 
    * @return the operation that will effect an undo
    */
-  List<T> undo();
+  O undo();
 
   /**
    * Places into the undo manager an operation that should be undone by undos.
    * 
    * @param op the operation that should be undone by an appropriate undo
    */
-  void undoableOp(T op);
+  void undoableOp(O op);
 }

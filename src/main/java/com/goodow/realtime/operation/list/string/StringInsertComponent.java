@@ -14,27 +14,27 @@
 package com.goodow.realtime.operation.list.string;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.list.AbstractInsertOperation;
+import com.goodow.realtime.operation.list.AbstractInsertComponent;
 
-public class StringInsertOperation extends AbstractInsertOperation<String> {
-  public static StringInsertOperation parse(JsonArray serialized) {
+public class StringInsertComponent extends AbstractInsertComponent<String> {
+  public static StringInsertComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
     String values = StringHelper.INSTANCE.parseValues(serialized.getArray(3));
-    return new StringInsertOperation(parseId(serialized), parseStartIndex(serialized), values);
+    return new StringInsertComponent(parseId(serialized), parseStartIndex(serialized), values);
   }
 
-  public StringInsertOperation(String id, int startIndex, String values) {
+  public StringInsertComponent(String id, int startIndex, String values) {
     super(id, startIndex, values);
   }
 
   @Override
-  public StringDeleteOperation invert() {
-    return new StringDeleteOperation(id, startIndex, values);
+  public StringDeleteComponent invert() {
+    return new StringDeleteComponent(id, startIndex, values);
   }
 
   @Override
-  protected StringInsertOperation create(int startIndex, String values) {
-    return new StringInsertOperation(id, startIndex, values);
+  protected StringInsertComponent create(int startIndex, String values) {
+    return new StringInsertComponent(id, startIndex, values);
   }
 
   @Override

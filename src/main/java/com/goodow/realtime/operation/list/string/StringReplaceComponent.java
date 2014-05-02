@@ -14,30 +14,30 @@
 package com.goodow.realtime.operation.list.string;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.list.AbstractReplaceOperation;
+import com.goodow.realtime.operation.list.AbstractReplaceComponent;
 
-public class StringReplaceOperation extends AbstractReplaceOperation<String> {
-  public static StringReplaceOperation parse(JsonArray serialized) {
+public class StringReplaceComponent extends AbstractReplaceComponent<String> {
+  public static StringReplaceComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
     String values = StringHelper.INSTANCE.parseValues(serialized.getArray(3));
-    return new StringReplaceOperation(parseId(serialized), parseStartIndex(serialized), null,
+    return new StringReplaceComponent(parseId(serialized), parseStartIndex(serialized), null,
         values);
   }
 
-  public StringReplaceOperation(String id, int startIndex, String oldValues, String newValues) {
+  public StringReplaceComponent(String id, int startIndex, String oldValues, String newValues) {
     super(id, startIndex, oldValues, newValues);
   }
 
   @Override
-  public StringReplaceOperation invert() {
+  public StringReplaceComponent invert() {
     assert oldValues != null;
-    return new StringReplaceOperation(id, startIndex, values, oldValues);
+    return new StringReplaceComponent(id, startIndex, values, oldValues);
   }
 
   @Override
-  protected AbstractReplaceOperation<String> create(int startIndex, String oldValues,
+  protected AbstractReplaceComponent<String> create(int startIndex, String oldValues,
       String newValues) {
-    return new StringReplaceOperation(id, startIndex, oldValues, newValues);
+    return new StringReplaceComponent(id, startIndex, oldValues, newValues);
   }
 
   @Override

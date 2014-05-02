@@ -15,56 +15,56 @@ package com.goodow.realtime.operation.list;
 
 import com.goodow.realtime.json.Json;
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
-import com.goodow.realtime.operation.list.string.StringDeleteOperation;
-import com.goodow.realtime.operation.list.string.StringInsertOperation;
+import com.goodow.realtime.operation.OperationComponent;
+import com.goodow.realtime.operation.list.string.StringDeleteComponent;
+import com.goodow.realtime.operation.list.string.StringInsertComponent;
 
 import junit.framework.TestCase;
 
-public class InsertOperationTest extends TestCase {
-  private AbstractInsertOperation<String> expected0;
+public class InsertTest extends TestCase {
+  private AbstractInsertComponent<String> expected0;
 
   /**
    * Performs tests for transforming text insertions against text deletions.
    */
   public void testInsertVsDelete() {
     // A's insertion spatially before B's deletion
-    AbstractInsertOperation<String> op1 = new StringInsertOperation(null, 2, "abc");
-    AbstractDeleteOperation<String> op2 = new StringDeleteOperation(null, 3, "def");
-    AbstractInsertOperation<String> transformedOp = op1.transformWith(op2, true)[0];
+    AbstractInsertComponent<String> op1 = new StringInsertComponent(null, 2, "abc");
+    AbstractDeleteComponent<String> op2 = new StringDeleteComponent(null, 3, "def");
+    OperationComponent<ListTarget<String>> transformedOp = op1.transform(op2, true);
     assertSame(op1, transformedOp);
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, false);
     assertSame(op1, transformedOp);
 
     // A's insertion spatially at the start of B's deletion
-    op2 = new StringDeleteOperation(null, 2, "def");
-    transformedOp = op1.transformWith(op2, true)[0];
+    op2 = new StringDeleteComponent(null, 2, "def");
+    transformedOp = op1.transform(op2, true);
     assertSame(op1, transformedOp);
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, false);
     assertSame(op1, transformedOp);
 
     // A's insertion spatially inside B's deletion
-    op2 = new StringDeleteOperation(null, 1, "def");
-    transformedOp = op1.transformWith(op2, true)[0];
-    expected0 = new StringInsertOperation(null, 1, "abc");
+    op2 = new StringDeleteComponent(null, 1, "def");
+    transformedOp = op1.transform(op2, true);
+    expected0 = new StringInsertComponent(null, 1, "abc");
     equals(expected0, transformedOp);
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, false);
     equals(expected0, transformedOp);
 
     // A's insertion spatially at the end of B's deletion
-    op2 = new StringDeleteOperation(null, 0, "de");
-    transformedOp = op1.transformWith(op2, true)[0];
-    expected0 = new StringInsertOperation(null, 0, "abc");
+    op2 = new StringDeleteComponent(null, 0, "de");
+    transformedOp = op1.transform(op2, true);
+    expected0 = new StringInsertComponent(null, 0, "abc");
     equals(expected0, transformedOp);
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, false);
     equals(expected0, transformedOp);
 
     // A's insertion spatially after B's deletion
-    op2 = new StringDeleteOperation(null, 0, "d");
-    transformedOp = op1.transformWith(op2, true)[0];
-    expected0 = new StringInsertOperation(null, 1, "abc");
+    op2 = new StringDeleteComponent(null, 0, "d");
+    transformedOp = op1.transform(op2, true);
+    expected0 = new StringInsertComponent(null, 1, "abc");
     equals(expected0, transformedOp);
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, false);
     equals(expected0, transformedOp);
   }
 
@@ -73,58 +73,58 @@ public class InsertOperationTest extends TestCase {
    */
   public void testInsertVsInsert() {
     // op1's insertion spatially before op2's insertion
-    AbstractInsertOperation<String> op1 = new StringInsertOperation(null, 1, "abc");
-    AbstractInsertOperation<String> op2 = new StringInsertOperation(null, 2, "def");
-    AbstractInsertOperation<String> transformedOp = op1.transformWith(op2, true)[0];
+    AbstractInsertComponent<String> op1 = new StringInsertComponent(null, 1, "abc");
+    AbstractInsertComponent<String> op2 = new StringInsertComponent(null, 2, "def");
+    OperationComponent<ListTarget<String>> transformedOp = op1.transform(op2, true);
     assertSame(op1, transformedOp);
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, false);
     assertSame(op1, transformedOp);
 
-    expected0 = new StringInsertOperation(null, 2 + 3, "def");
-    transformedOp = op2.transformWith(op1, true)[0];
+    expected0 = new StringInsertComponent(null, 2 + 3, "def");
+    transformedOp = op2.transform(op1, true);
     equals(expected0, transformedOp);
-    transformedOp = op2.transformWith(op1, false)[0];
+    transformedOp = op2.transform(op1, false);
     equals(expected0, transformedOp);
 
     // op1's insertion spatially at the same location as op2's insertion
-    op2 = new StringInsertOperation(null, 1, "def");
-    transformedOp = op1.transformWith(op2, true)[0];
-    expected0 = new StringInsertOperation(null, 1 + 3, "abc");
+    op2 = new StringInsertComponent(null, 1, "def");
+    transformedOp = op1.transform(op2, false);
+    expected0 = new StringInsertComponent(null, 1 + 3, "abc");
     equals(expected0, transformedOp);
 
-    transformedOp = op1.transformWith(op2, false)[0];
+    transformedOp = op1.transform(op2, true);
     assertSame(op1, transformedOp);
   }
 
   public void testParseFromJson() {
-    AbstractInsertOperation<String> op = new StringInsertOperation(null, 2, "123");
-    equals(op, StringInsertOperation.parse(Json.<JsonArray> parse(op.toString())));
-    op = new StringInsertOperation("id", 0, "true");
-    equals(op, StringInsertOperation.parse(Json.<JsonArray> parse(op.toString())));
+    AbstractInsertComponent<String> op = new StringInsertComponent(null, 2, "123");
+    equals(op, StringInsertComponent.parse(Json.<JsonArray> parse(op.toString())));
+    op = new StringInsertComponent("id", 0, "true");
+    equals(op, StringInsertComponent.parse(Json.<JsonArray> parse(op.toString())));
   }
 
   public void testTransformIndexReference() {
-    AbstractInsertOperation<String> op = new StringInsertOperation(null, 1, "abc");
-    // cursor before AbstractInsertOperation's startIndex
+    AbstractInsertComponent<String> op = new StringInsertComponent(null, 1, "abc");
+    // cursor before AbstractInsertComponent's startIndex
     int transformIndex = op.transformIndexReference(0, true, true);
     assertEquals(0, transformIndex);
     transformIndex = op.transformIndexReference(0, false, true);
     assertEquals(0, transformIndex);
 
-    // cursor at the same location as AbstractInsertOperation's startIndex
+    // cursor at the same location as AbstractInsertComponent's startIndex
     transformIndex = op.transformIndexReference(1, true, true);
     assertEquals(1 + 3, transformIndex);
     transformIndex = op.transformIndexReference(1, false, true);
     assertEquals(1, transformIndex);
 
-    // cursor after AbstractInsertOperation's startIndex
+    // cursor after AbstractInsertComponent's startIndex
     transformIndex = op.transformIndexReference(2, true, true);
     assertEquals(2 + 3, transformIndex);
     transformIndex = op.transformIndexReference(2, false, true);
     assertEquals(2 + 3, transformIndex);
   }
 
-  void equals(AbstractOperation<?> op0, AbstractOperation<?> op1) {
+  void equals(OperationComponent<?> op0, OperationComponent<?> op1) {
     assertEquals(op0, op1);
     assertEquals(op0.invert(), op1.invert());
   }

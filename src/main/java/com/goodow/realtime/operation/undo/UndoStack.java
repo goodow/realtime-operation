@@ -13,44 +13,41 @@
  */
 package com.goodow.realtime.operation.undo;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.Transformer;
 import com.goodow.realtime.operation.util.Pair;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * An undo stack.
  * 
  * TODO: This can be heavily optimised.
  * 
- * 
- * @param <T> The type of operations.
+ * @param <O> The type of operations.
  */
-final class UndoStack<T> {
+final class UndoStack<O extends Operation<?>> {
+  private static final class StackEntry<T> {
+    final T op;
+    JsonArray nonUndoables = Json.createArray();
 
-  private static int MAX_CAPACITY = 100;
-  private final UndoManagerImpl.Algorithms<T> algorithms;
-  private final List<T> ops = new LinkedList<T>();
-  private boolean checkpointer;
-
-  UndoStack(UndoManagerImpl.Algorithms<T> algorithms) {
-    this.algorithms = algorithms;
+    StackEntry(T op) {
+      this.op = op;
+    }
   }
 
-  void checkpoint() {
-    checkpointer = true;
+  final JsonArray stack = Json.createArray(); // Stack<StackEntry<T>>
+  final Transformer<O> transformer;
+
+  UndoStack(Transformer<O> transformer) {
+    this.transformer = transformer;
   }
 
   /**
    * Clear the stack.
    */
   void clear() {
-    ops.clear();
-  }
-
-  boolean isEmpty() {
-    return ops.isEmpty();
+    stack.clear();
   }
 
   /**
@@ -58,11 +55,9 @@ final class UndoStack<T> {
    * 
    * @param op the operation that should not be undone
    */
-  void nonUndoableOperation(T op) {
-    assert op != null;
-    if (!ops.isEmpty()) {
-      ops.add(op);
-      keepCapacity(ops);
+  void nonUndoableOperation(O op) {
+    if (stack.length() > 0) {
+      stack.<StackEntry<O>> get(stack.length() - 1).nonUndoables.push(op);
     }
   }
 
@@ -70,16 +65,26 @@ final class UndoStack<T> {
    * Pops an operation from the undo stack and returns the operation that effects the undo and the
    * transformed non-undoable operation.
    * 
-   * @return the operation that accomplishes the desired undo
+   * @return a pair containeng the operation that accomplishes the desired undo and the transformed
+   *         non-undoable operation
    */
-  Pair<List<T>, List<T>> pop() {
-    List<T> transformedClientOps = new ArrayList<T>();
-    int index;
-    do {
-      index = popOne(transformedClientOps);
-    } while (ops.get(index - 1) != null);
-    ops.remove(index - 1);
-    return Pair.of(transformedClientOps, ops.subList(index - 1, ops.size()));
+  Pair<O, O> pop() {
+    if (stack.length() == 0) {
+      return null;
+    }
+    StackEntry<O> entry = stack.remove(stack.length() - 1);
+    @SuppressWarnings("unchecked")
+    O op = (O) entry.op.invert();
+    if (entry.nonUndoables.length() == 0) {
+      return new Pair<O, O>(op, null);
+    }
+    Pair<O, O> pair = transformer.transform(op, transformer.compose(entry.nonUndoables));
+    StackEntry<O> nextEntry =
+        stack.length() == 0 ? null : stack.<StackEntry<O>> get(stack.length() - 1);
+    if (nextEntry != null) {
+      nextEntry.nonUndoables.push(pair.second);
+    }
+    return new Pair<O, O>(pair.first, pair.second);
   }
 
   /**
@@ -87,50 +92,7 @@ final class UndoStack<T> {
    * 
    * @param op the operation to push onto the undo stack
    */
-  void push(T op) {
-    assert op != null;
-    if (ops.isEmpty() && !checkpointer) {
-      return;
-    }
-    if (checkpointer) {
-      ops.add(null);
-      checkpointer = false;
-    }
-    ops.add(null);
-    ops.add(op);
-    keepCapacity(ops);
-  }
-
-  private void keepCapacity(List<T> list) {
-    int size = list.size();
-    if (size <= MAX_CAPACITY) {
-      return;
-    }
-    assert list.get(0) == null && list.get(1) == null;
-    list.remove(1);
-    list.remove(0);
-    size -= 2;
-    int nextCheckpointer = -1;
-    boolean previousIsNull = false;
-    for (T op : list) {
-      if (previousIsNull && op == null && size - nextCheckpointer <= MAX_CAPACITY) {
-        break;
-      }
-      nextCheckpointer++;
-      previousIsNull = op == null;
-    }
-    for (int i = 0; i < nextCheckpointer; i++) {
-      list.remove(0);
-    }
-  }
-
-  private int popOne(List<T> results) {
-    int index = ops.lastIndexOf(null);
-    ops.remove(index);
-    T op = algorithms.invert(ops.remove(index));
-    if (op != null) {
-      algorithms.transform(results, op, ops, index);
-    }
-    return index;
+  void push(O op) {
+    stack.push(new StackEntry<O>(op));
   }
 }

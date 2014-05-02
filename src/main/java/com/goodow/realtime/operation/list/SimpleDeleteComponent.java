@@ -17,27 +17,27 @@ import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.list.json.JsonHelper;
 import com.goodow.realtime.operation.list.string.StringHelper;
 
-public class SimpleDeleteOperation<T> extends AbstractDeleteOperation<T> implements ListHelper<T> {
-  public static <T> SimpleDeleteOperation<T> parse(JsonArray serialized) {
+public class SimpleDeleteComponent<T> extends AbstractDeleteComponent<T> implements ListHelper<T> {
+  public static <T> SimpleDeleteComponent<T> parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    return new SimpleDeleteOperation<T>(parseId(serialized), parseStartIndex(serialized),
+    return new SimpleDeleteComponent<T>(parseId(serialized), parseStartIndex(serialized),
         (int) serialized.getNumber(3));
   }
 
   private ListHelper<T> delegate;
 
-  public SimpleDeleteOperation(String id, int startIndex, int length) {
+  public SimpleDeleteComponent(String id, int startIndex, int length) {
     super(id, startIndex, length);
   }
 
-  public SimpleDeleteOperation(String id, int startIndex, T values) {
+  public SimpleDeleteComponent(String id, int startIndex, T values) {
     super(id, startIndex, values);
   }
 
   @Override
-  public SimpleDeleteOperation<T> invert() {
+  public SimpleDeleteComponent<T> invert() {
     assert values != null;
-    return new SimpleDeleteOperation<T>(id, startIndex, values);
+    return new SimpleDeleteComponent<T>(id, startIndex, values);
   }
 
   @Override
@@ -77,13 +77,13 @@ public class SimpleDeleteOperation<T> extends AbstractDeleteOperation<T> impleme
   }
 
   @Override
-  protected SimpleDeleteOperation<T> create(int startIndex, int length) {
-    return new SimpleDeleteOperation<T>(id, startIndex, length);
+  protected SimpleDeleteComponent<T> create(int startIndex, int length) {
+    return new SimpleDeleteComponent<T>(id, startIndex, length);
   }
 
   @Override
-  protected SimpleDeleteOperation<T> create(int startIndex, T values) {
-    return new SimpleDeleteOperation<T>(id, startIndex, values);
+  protected SimpleDeleteComponent<T> create(int startIndex, T values) {
+    return new SimpleDeleteComponent<T>(id, startIndex, values);
   }
 
   @Override

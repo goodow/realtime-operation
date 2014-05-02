@@ -14,14 +14,15 @@
 package com.goodow.realtime.operation.cursor;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.impl.AbstractComponent;
 
-public class ReferenceShiftedOperation extends AbstractOperation<Void> {
+public class ReferenceShiftedComponent extends AbstractComponent<Void> {
   public static final int TYPE = 25;
 
-  public static ReferenceShiftedOperation parse(JsonArray serialized) {
+  public static ReferenceShiftedComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 6;
-    return new ReferenceShiftedOperation(parseId(serialized), serialized.getString(2),
+    return new ReferenceShiftedComponent(parseId(serialized), serialized.getString(2),
         (int) serialized.getNumber(3), serialized.getBoolean(4), (int) serialized.getNumber(5));
   }
 
@@ -31,7 +32,7 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
 
   public final int oldIndex;
 
-  public ReferenceShiftedOperation(String id, String referencedObjectId, int newIndex,
+  public ReferenceShiftedComponent(String id, String referencedObjectId, int newIndex,
       boolean canBeDeleted, int oldIndex) {
     super(TYPE, id);
     this.referencedObjectId = referencedObjectId;
@@ -46,25 +47,21 @@ public class ReferenceShiftedOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  public ReferenceShiftedOperation invert() {
-    return new ReferenceShiftedOperation(id, referencedObjectId, oldIndex, canBeDeleted, newIndex);
+  public ReferenceShiftedComponent invert() {
+    return new ReferenceShiftedComponent(id, referencedObjectId, oldIndex, canBeDeleted, newIndex);
   }
 
   @Override
-  public ReferenceShiftedOperation[] transformWith(AbstractOperation<Void> operation,
-      boolean arrivedAfter) {
-    assert operation instanceof ReferenceShiftedOperation && isSameId(operation);
-    ReferenceShiftedOperation op = (ReferenceShiftedOperation) operation;
+  public ReferenceShiftedComponent transform(Operation<Void> other, boolean applied) {
+    assert other instanceof ReferenceShiftedComponent && isSameId(other);
+    ReferenceShiftedComponent op = (ReferenceShiftedComponent) other;
     assert referencedObjectId.equals(op.referencedObjectId);
-    return arrivedAfter ? asArray(new ReferenceShiftedOperation(id, referencedObjectId, newIndex,
-        canBeDeleted, op.newIndex)) : null;
+    return applied ? null : new ReferenceShiftedComponent(id, referencedObjectId, newIndex,
+        canBeDeleted, op.newIndex);
   }
 
   @Override
   protected void toJson(JsonArray json) {
-    json.push(referencedObjectId);
-    json.push(newIndex);
-    json.push(canBeDeleted);
-    json.push(oldIndex);
+    json.push(referencedObjectId).push(newIndex).push(canBeDeleted).push(oldIndex);
   }
 }

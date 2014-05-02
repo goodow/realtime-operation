@@ -11,13 +11,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.goodow.realtime.operation;
+package com.goodow.realtime.operation.impl;
 
 import com.goodow.realtime.json.Json;
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.util.Pair;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.OperationComponent;
 
-public abstract class AbstractOperation<T> implements Operation<T> {
+public abstract class AbstractComponent<T> extends OperationComponent<T> {
   protected static String parseId(JsonArray serialized) {
     return serialized.getString(1);
   }
@@ -25,7 +26,7 @@ public abstract class AbstractOperation<T> implements Operation<T> {
   public final int type;
   public final String id;
 
-  protected AbstractOperation(int type, String id) {
+  protected AbstractComponent(int type, String id) {
     this.type = type;
     this.id = id;
   }
@@ -44,13 +45,11 @@ public abstract class AbstractOperation<T> implements Operation<T> {
   }
 
   @Override
-  public abstract AbstractOperation<T> invert();
+  public abstract AbstractComponent<T> invert();
 
   @Override
   public JsonArray toJson() {
-    JsonArray json = Json.createArray();
-    json.push(type);
-    json.push(id);
+    JsonArray json = Json.createArray().push(type).push(id);
     toJson(json);
     return json;
   }
@@ -60,32 +59,13 @@ public abstract class AbstractOperation<T> implements Operation<T> {
     return toJson().toJsonString();
   }
 
-  /**
-   * @param operation
-   * @param arrivedAfter Whether this operation reaches the server after {@code operation}.
-   * @return
-   */
-  public abstract AbstractOperation<T>[] transformWith(AbstractOperation<T> operation,
-      boolean arrivedAfter);
-
-  @Override
-  public Pair<AbstractOperation<T>[], AbstractOperation<T>[]> transformWith(
-      Operation<T> serverOperation) {
-    assert serverOperation instanceof AbstractOperation
-        && isSameId((AbstractOperation<T>) serverOperation);
-    AbstractOperation<T> serverOp = (AbstractOperation<T>) serverOperation;
-    AbstractOperation<T>[] transformedClientOps = this.transformWith(serverOp, true);
-    AbstractOperation<T>[] transformedServerOps = serverOp.transformWith(this, false);
-    return Pair.of(transformedClientOps, transformedServerOps);
-  }
-
   @SafeVarargs
   protected final <O> O[] asArray(O... operations) {
     return operations;
   }
 
-  protected boolean isSameId(AbstractOperation<?> operation) {
-    String id2 = operation.id;
+  protected boolean isSameId(Operation<?> operation) {
+    String id2 = ((AbstractComponent<?>) operation).id;
     return id == null ? id2 == null : id.equals(id2);
   }
 

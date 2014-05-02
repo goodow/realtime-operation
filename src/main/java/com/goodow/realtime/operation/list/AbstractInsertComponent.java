@@ -13,18 +13,26 @@
  */
 package com.goodow.realtime.operation.list;
 
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.Operation;
 
-public abstract class AbstractInsertOperation<T> extends AbstractListOperation<T> {
+public abstract class AbstractInsertComponent<T> extends AbstractListComponent<T> {
   public static final int TYPE = 5;
 
-  protected AbstractInsertOperation(String id, int startIndex, T values) {
+  protected AbstractInsertComponent(String id, int startIndex, T values) {
     super(TYPE, id, startIndex, values, -1);
   }
 
   @Override
   public void apply(ListTarget<T> target) {
     target.insert(startIndex, values);
+  }
+
+  @Override
+  public AbstractInsertComponent<T> transform(Operation<ListTarget<T>> other, boolean applied) {
+    assert other instanceof AbstractListComponent && isSameId(other);
+    AbstractListComponent<T> op = (AbstractListComponent<T>) other;
+    int transformedStart = op.transformIndexReference(startIndex, !applied, false);
+    return transformedStart == startIndex ? this : create(transformedStart, values);
   }
 
   @Override
@@ -35,15 +43,5 @@ public abstract class AbstractInsertOperation<T> extends AbstractListOperation<T
     return index;
   }
 
-  @Override
-  public AbstractInsertOperation<T>[] transformWith(AbstractOperation<ListTarget<T>> operation,
-      boolean arrivedAfter) {
-    assert operation instanceof AbstractListOperation && isSameId(operation);
-    AbstractListOperation<T> op = (AbstractListOperation<T>) operation;
-    int transformedStart = op.transformIndexReference(startIndex, arrivedAfter, false);
-    return transformedStart == startIndex ? asArray(this)
-        : asArray(create(transformedStart, values));
-  }
-
-  protected abstract AbstractInsertOperation<T> create(int startIndex, T values);
+  protected abstract AbstractInsertComponent<T> create(int startIndex, T values);
 }

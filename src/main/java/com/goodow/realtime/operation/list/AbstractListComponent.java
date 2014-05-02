@@ -14,9 +14,9 @@
 package com.goodow.realtime.operation.list;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.impl.AbstractComponent;
 
-public abstract class AbstractListOperation<T> extends AbstractOperation<ListTarget<T>> {
+public abstract class AbstractListComponent<T> extends AbstractComponent<ListTarget<T>> {
   protected static int parseStartIndex(JsonArray serialized) {
     return (int) serialized.getNumber(2);
   }
@@ -25,7 +25,7 @@ public abstract class AbstractListOperation<T> extends AbstractOperation<ListTar
   protected final T values;
   protected final int length;
 
-  protected AbstractListOperation(int type, String id, int startIndex, T values, int length) {
+  protected AbstractListComponent(int type, String id, int startIndex, T values, int length) {
     super(type, id);
     assert startIndex >= 0;
     this.startIndex = startIndex;
@@ -49,7 +49,7 @@ public abstract class AbstractListOperation<T> extends AbstractOperation<ListTar
   @Override
   protected void toJson(JsonArray json) {
     json.push(startIndex);
-    if (this instanceof AbstractDeleteOperation) {
+    if (this instanceof AbstractDeleteComponent) {
       json.push(length);
     } else {
       json.push(getHelper().toJson(values));

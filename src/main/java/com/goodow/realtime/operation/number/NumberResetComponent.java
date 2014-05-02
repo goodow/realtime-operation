@@ -14,15 +14,16 @@
 package com.goodow.realtime.operation.number;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.impl.AbstractComponent;
 
-public class NumberResetOperation extends AbstractOperation<NumberTarget> {
+public class NumberResetComponent extends AbstractComponent<NumberTarget> {
 
   public static final int TYPE = 9;
   private final double oldNumber;
   private final double newNumber;
 
-  public NumberResetOperation(String id, double oldNumber, double newNumber) {
+  public NumberResetComponent(String id, double oldNumber, double newNumber) {
     super(TYPE, id);
     assert !Double.isNaN(newNumber) && oldNumber != newNumber;
     this.oldNumber = oldNumber;
@@ -35,22 +36,22 @@ public class NumberResetOperation extends AbstractOperation<NumberTarget> {
   }
 
   @Override
-  public NumberResetOperation invert() {
+  public NumberResetComponent invert() {
     assert !Double.isNaN(oldNumber);
-    return new NumberResetOperation(id, newNumber, oldNumber);
+    return new NumberResetComponent(id, newNumber, oldNumber);
   }
 
   @Override
-  public NumberResetOperation[] transformWith(AbstractOperation<NumberTarget> operation,
-      boolean arrivedAfter) {
-    assert (operation instanceof NumberResetOperation || operation instanceof NumberAddOperation)
-        && isSameId(operation);
-    if (arrivedAfter && operation instanceof NumberResetOperation) {
-      double transformedOldNumber = ((NumberResetOperation) operation).newNumber;
-      return transformedOldNumber == newNumber ? null : asArray(new NumberResetOperation(id,
-          transformedOldNumber, newNumber));
+  public NumberResetComponent transform(Operation<NumberTarget> other, boolean applied) {
+    assert (other instanceof NumberResetComponent || other instanceof NumberAddComponent)
+        && isSameId(other);
+    if (other instanceof NumberResetComponent) {
+      NumberResetComponent op = ((NumberResetComponent) other);
+      return applied || op.newNumber == newNumber ? null : new NumberResetComponent(id,
+          op.newNumber, newNumber);
     } else {
-      return null;
+      return new NumberResetComponent(id, oldNumber + ((NumberAddComponent) other).number,
+          newNumber);
     }
   }
 

@@ -58,9 +58,6 @@ public class StringHelper implements ListHelper<String> {
 
   @Override
   public JsonArray toJson(String values) {
-    JsonArray json = Json.createArray();
-    json.push(TYPE);
-    json.push(values);
-    return json;
+    return Json.createArray().push(TYPE).push(values);
   }
 }

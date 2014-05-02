@@ -14,14 +14,15 @@
 package com.goodow.realtime.operation.number;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.impl.AbstractComponent;
 
-public class NumberAddOperation extends AbstractOperation<NumberTarget> {
+public class NumberAddComponent extends AbstractComponent<NumberTarget> {
 
   public static final int TYPE = 8;
-  private final double number;
+  public final double number;
 
-  public NumberAddOperation(String id, double number) {
+  public NumberAddComponent(String id, double number) {
     super(TYPE, id);
     assert number != 0;
     this.number = number;
@@ -33,16 +34,15 @@ public class NumberAddOperation extends AbstractOperation<NumberTarget> {
   }
 
   @Override
-  public NumberAddOperation invert() {
-    return new NumberAddOperation(id, -number);
+  public NumberAddComponent invert() {
+    return new NumberAddComponent(id, -number);
   }
 
   @Override
-  public NumberAddOperation[] transformWith(AbstractOperation<NumberTarget> operation,
-      boolean arrivedAfter) {
-    assert (operation instanceof NumberAddOperation || operation instanceof NumberResetOperation)
-        && isSameId(operation);
-    return operation instanceof NumberAddOperation ? asArray(this) : null;
+  public NumberAddComponent transform(Operation<NumberTarget> other, boolean applied) {
+    assert (other instanceof NumberAddComponent || other instanceof NumberResetComponent)
+        && isSameId(other);
+    return other instanceof NumberAddComponent ? this : null;
   }
 
   @Override

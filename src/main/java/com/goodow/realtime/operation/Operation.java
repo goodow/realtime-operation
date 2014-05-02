@@ -14,7 +14,6 @@
 package com.goodow.realtime.operation;
 
 import com.goodow.realtime.json.JsonElement;
-import com.goodow.realtime.operation.util.Pair;
 
 /**
  * Represents an operation that can be applied to a target.
@@ -34,6 +33,12 @@ public interface Operation<T> {
 
   JsonElement toJson();
 
-  Pair<? extends Operation<T>[], ? extends Operation<T>[]> transformWith(
-      Operation<T> serverOperation);
+  /**
+   * Transform this by other. Returns transformed version of this op. Both this and other must not
+   * be modified by transform
+   * 
+   * @param applied whether this op has been applied
+   * @return
+   */
+  Operation<T> transform(Operation<T> other, boolean applied);
 }

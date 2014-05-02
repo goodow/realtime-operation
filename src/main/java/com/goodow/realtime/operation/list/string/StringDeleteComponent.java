@@ -14,37 +14,37 @@
 package com.goodow.realtime.operation.list.string;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.list.AbstractDeleteOperation;
+import com.goodow.realtime.operation.list.AbstractDeleteComponent;
 
-public class StringDeleteOperation extends AbstractDeleteOperation<String> {
-  public static StringDeleteOperation parse(JsonArray serialized) {
+public class StringDeleteComponent extends AbstractDeleteComponent<String> {
+  public static StringDeleteComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    return new StringDeleteOperation(parseId(serialized), parseStartIndex(serialized),
+    return new StringDeleteComponent(parseId(serialized), parseStartIndex(serialized),
         (int) serialized.getNumber(3));
   }
 
-  public StringDeleteOperation(String id, int startIndex, int length) {
+  public StringDeleteComponent(String id, int startIndex, int length) {
     super(id, startIndex, length);
   }
 
-  public StringDeleteOperation(String id, int startIndex, String values) {
+  public StringDeleteComponent(String id, int startIndex, String values) {
     super(id, startIndex, values);
   }
 
   @Override
-  public StringInsertOperation invert() {
+  public StringInsertComponent invert() {
     assert values != null;
-    return new StringInsertOperation(id, startIndex, values);
+    return new StringInsertComponent(id, startIndex, values);
   }
 
   @Override
-  protected StringDeleteOperation create(int startIndex, int length) {
-    return new StringDeleteOperation(id, startIndex, length);
+  protected StringDeleteComponent create(int startIndex, int length) {
+    return new StringDeleteComponent(id, startIndex, length);
   }
 
   @Override
-  protected StringDeleteOperation create(int startIndex, String values) {
-    return new StringDeleteOperation(id, startIndex, values);
+  protected StringDeleteComponent create(int startIndex, String values) {
+    return new StringDeleteComponent(id, startIndex, values);
   }
 
   @Override

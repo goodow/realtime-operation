@@ -77,8 +77,7 @@ public class JsonHelper implements ListHelper<JsonElement[]> {
 
   @Override
   public JsonArray toJson(JsonElement[] values) {
-    JsonArray json = Json.createArray();
-    json.push(TYPE);
+    JsonArray json = Json.createArray().push(TYPE);
     for (JsonElement value : values) {
       json.push(value);
     }

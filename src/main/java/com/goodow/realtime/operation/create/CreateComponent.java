@@ -14,23 +14,23 @@
 package com.goodow.realtime.operation.create;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.impl.AbstractComponent;
 
-public class CreateOperation extends AbstractOperation<Void> {
+public class CreateComponent extends AbstractComponent<Void> {
   public static final int TYPE = 7;
   public static final int MAP = 0;
   public static final int LIST = 1;
   public static final int STRING = 2;
   public static final int INDEX_REFERENCE = 4;
 
-  public static CreateOperation parse(JsonArray serialized) {
+  public static CreateComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 3;
-    return new CreateOperation(parseId(serialized), (int) serialized.getNumber(2));
+    return new CreateComponent(parseId(serialized), (int) serialized.getNumber(2));
   }
 
   public final int subType;
 
-  public CreateOperation(String id, int type) {
+  public CreateComponent(String id, int type) {
     super(TYPE, id);
     this.subType = type;
   }
@@ -41,14 +41,9 @@ public class CreateOperation extends AbstractOperation<Void> {
   }
 
   @Override
-  public AbstractOperation<Void> invert() {
+  public AbstractComponent<Void> invert() {
     return null;
     // throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CreateOperation[] transformWith(AbstractOperation<Void> operation, boolean arrivedAfter) {
-    throw new UnsupportedOperationException();
   }
 
   @Override

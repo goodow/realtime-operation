@@ -14,16 +14,17 @@
 package com.goodow.realtime.operation.map;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.operation.AbstractOperation;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.impl.AbstractComponent;
 
-public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarget<T>> {
+public abstract class AbstractMapComponent<T> extends AbstractComponent<MapTarget<T>> {
   public static final int TYPE = 8;
 
   protected final String key;
   protected final T oldValue;
   protected final T newValue;
 
-  protected AbstractMapOperation(String id, String key, T oldValue, T newValue) {
+  protected AbstractMapComponent(String id, String key, T oldValue, T newValue) {
     super(TYPE, id);
     assert key != null : "Null key";
     assert (oldValue == null && newValue == null) || !equals(oldValue, newValue);
@@ -38,20 +39,19 @@ public abstract class AbstractMapOperation<T> extends AbstractOperation<MapTarge
   }
 
   @Override
-  public AbstractMapOperation<T>[] transformWith(AbstractOperation<MapTarget<T>> operation,
-      boolean arrivedAfter) {
-    assert operation instanceof AbstractMapOperation && isSameId(operation);
-    AbstractMapOperation<T> op = (AbstractMapOperation<T>) operation;
+  public AbstractMapComponent<T> transform(Operation<MapTarget<T>> other, boolean applied) {
+    assert other instanceof AbstractMapComponent && isSameId(other);
+    AbstractMapComponent<T> op = (AbstractMapComponent<T>) other;
     if (!key.equals(op.key)) {
-      return asArray(this);
+      return this;
     }
-    if (!arrivedAfter || equals(newValue, op.newValue)) {
+    if (applied || equals(newValue, op.newValue)) {
       return null;
     }
-    return asArray(create(id, key, op.newValue, newValue));
+    return create(id, key, op.newValue, newValue);
   }
 
-  protected abstract AbstractMapOperation<T> create(String id, String key, T oldValue, T newValue);
+  protected abstract AbstractMapComponent<T> create(String id, String key, T oldValue, T newValue);
 
   protected boolean equals(T value0, T value1) {
     return value0 == null ? value1 == null : value0.equals(value1);

@@ -13,12 +13,9 @@
  */
 package com.goodow.realtime.operation.undo;
 
-import com.goodow.realtime.operation.RealtimeOperation;
-import com.goodow.realtime.operation.Transformer;
-import com.goodow.realtime.operation.TransformerImpl;
+import com.goodow.realtime.operation.impl.CollaborativeOperation;
+import com.goodow.realtime.operation.impl.CollaborativeTransformer;
 import com.goodow.realtime.operation.util.Pair;
-
-import java.util.List;
 
 /**
  * A factory for creating undo managers for document operations.
@@ -44,17 +41,17 @@ public final class UndoManagerFactory {
     }
 
     @Override
-    public List<Object> redo() {
+    public Object redo() {
       return redoPlus().first;
     }
 
     @Override
-    public Pair<List<Object>, List<Object>> redoPlus() {
+    public Pair<Object, Object> redoPlus() {
       throw new UnsupportedOperationException("No Redo For You!");
     }
 
     @Override
-    public List<Object> undo() {
+    public Object undo() {
       return undoPlus().first;
     }
 
@@ -63,33 +60,18 @@ public final class UndoManagerFactory {
     }
 
     @Override
-    public Pair<List<Object>, List<Object>> undoPlus() {
+    public Pair<Object, Object> undoPlus() {
       throw new UnsupportedOperationException("No Undo For You!");
     }
   };
-  private static final UndoManagerImpl.Algorithms<RealtimeOperation> algorithms =
-      new UndoManagerImpl.Algorithms<RealtimeOperation>() {
-        Transformer<RealtimeOperation> transformer = new TransformerImpl<RealtimeOperation>();
-
-        @Override
-        public RealtimeOperation invert(RealtimeOperation operation) {
-          return operation.invert();
-        }
-
-        @Override
-        public void transform(List<RealtimeOperation> results, RealtimeOperation clientOp,
-            List<RealtimeOperation> serverOps, int startIndex) {
-          transformer.transform(results, clientOp, serverOps, startIndex, true);
-        }
-      };
 
   /**
    * Creates a new undo manager.
    * 
    * @return A new undo manager.
    */
-  public static UndoManagerPlus<RealtimeOperation> createUndoManager() {
-    return new UndoManagerImpl<RealtimeOperation>(algorithms);
+  public static UndoManagerPlus<CollaborativeOperation> createUndoManager() {
+    return new UndoManagerImpl<CollaborativeOperation>(new CollaborativeTransformer());
   }
 
   /**

@@ -13,115 +13,129 @@
  */
 package com.goodow.realtime.operation.undo;
 
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.operation.Operation;
+import com.goodow.realtime.operation.Transformer;
 import com.goodow.realtime.operation.util.Pair;
-
-import java.util.List;
 
 /**
  * An undo manager implementation.
  * 
  * 
- * @param <T> The type of operations.
+ * @param <O> The type of operations.
  */
-public final class UndoManagerImpl<T> implements UndoManagerPlus<T> {
+public final class UndoManagerImpl<O extends Operation<?>> implements UndoManagerPlus<O> {
 
-  /**
-   * Algorithms required by the undo manager.
-   * 
-   * @param <T> The type of operations.
-   */
-  public interface Algorithms<T> {
+  private static final class Checkpointer {
+    private final JsonArray partitions = Json.createArray();
+    private int lastPartition = 0;
 
-    /**
-     * Inverts the given operation.
-     * 
-     * @param operation The operation to invert.
-     * @return The inverse of the given operation.
-     */
-    T invert(T operation);
+    void checkpoint() {
+      if (lastPartition > 0) {
+        partitions.push(lastPartition);
+        lastPartition = 0;
+      }
+    }
 
-    /**
-     * Transforms the given operations.
-     * 
-     * @param clientOp The first concurrent operation.
-     * @param serverOps The second concurrent operation.
-     */
-    void transform(List<T> results, T clientOp, List<T> serverOps, int startIndex);
+    void increment() {
+      ++lastPartition;
+    }
+
+    int releaseCheckpoint() {
+      if (lastPartition > 0) {
+        int value = lastPartition;
+        lastPartition = 0;
+        return value;
+      }
+      if (partitions.length() == 0) {
+        return 0;
+      }
+      int number = (int) partitions.getNumber(partitions.length() - 1);
+      partitions.remove(partitions.length() - 1);
+      return number;
+    }
   }
 
-  private final UndoStack<T> undoStack;
-  private final UndoStack<T> redoStack;
+  private final UndoStack<O> undoStack;
+  private final UndoStack<O> redoStack;
+  private final Checkpointer checkpointer = new Checkpointer();
+  private final Transformer<O> algorithms;
 
-  public UndoManagerImpl(Algorithms<T> algorithms) {
-    undoStack = new UndoStack<T>(algorithms);
-    redoStack = new UndoStack<T>(algorithms);
+  public UndoManagerImpl(Transformer<O> algorithms) {
+    this.algorithms = algorithms;
+    undoStack = new UndoStack<O>(algorithms);
+    redoStack = new UndoStack<O>(algorithms);
   }
 
   @Override
   public boolean canRedo() {
-    return !redoStack.isEmpty();
+    return redoStack.stack.length() != 0;
   }
 
   @Override
   public boolean canUndo() {
-    return !undoStack.isEmpty();
+    return undoStack.stack.length() != 0;
   }
 
   @Override
   public void checkpoint() {
-    undoStack.checkpoint();
+    checkpointer.checkpoint();
   }
 
   @Override
-  public void nonUndoableOp(T op) {
+  public void nonUndoableOp(O op) {
     undoStack.nonUndoableOperation(op);
     redoStack.nonUndoableOperation(op);
   }
 
   // TODO: This current implementation does more work than necessary.
   @Override
-  public List<T> redo() {
-    Pair<List<T>, List<T>> redoPlus = redoPlus();
-    return redoPlus.first;
+  public O redo() {
+    Pair<O, O> redoPlus = redoPlus();
+    return redoPlus == null ? null : redoPlus.first;
   }
 
   @Override
-  public Pair<List<T>, List<T>> redoPlus() {
-    if (!canRedo()) {
-      throw new UnsupportedOperationException("Redo stack is empty.");
+  public Pair<O, O> redoPlus() {
+    Pair<O, O> ops = redoStack.pop();
+    if (ops != null) {
+      checkpointer.checkpoint();
+      undoStack.push(ops.first);
+      checkpointer.increment();
     }
-    Pair<List<T>, List<T>> pair = redoStack.pop();
-    undoStack.checkpoint();
-    for (T op : pair.first) {
-      undoStack.push(op);
-    }
-    return pair;
+    return ops;
   }
 
   // TODO: This current implementation does more work than necessary.
   @Override
-  public List<T> undo() {
-    Pair<List<T>, List<T>> undoPlus = undoPlus();
-    return undoPlus.first;
+  public O undo() {
+    Pair<O, O> undoPlus = undoPlus();
+    return undoPlus == null ? null : undoPlus.first;
   }
 
   @Override
-  public void undoableOp(T op) {
+  public void undoableOp(O op) {
     undoStack.push(op);
+    checkpointer.increment();
     redoStack.clear();
   }
 
   // TODO: This current implementation does more work than necessary.
   @Override
-  public Pair<List<T>, List<T>> undoPlus() {
-    if (!canUndo()) {
-      throw new UnsupportedOperationException("Undo stack is empty.");
+  public Pair<O, O> undoPlus() {
+    int numToUndo = checkpointer.releaseCheckpoint();
+    if (numToUndo == 0) {
+      return null;
     }
-    Pair<List<T>, List<T>> pair = undoStack.pop();
-    redoStack.checkpoint();
-    for (T op : pair.first) {
-      redoStack.push(op);
+    JsonArray operations = Json.createArray();
+    for (int i = 0; i < numToUndo - 1; ++i) {
+      operations.push(undoStack.pop().first);
     }
-    return pair;
+    Pair<O, O> ops = undoStack.pop();
+    operations.push(ops.first);
+    O op = algorithms.compose(operations);
+    redoStack.push(op);
+    return new Pair<O, O>(op, ops.second);
   }
 }

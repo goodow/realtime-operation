@@ -15,30 +15,30 @@ package com.goodow.realtime.operation.list.json;
 
 import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.json.JsonElement;
-import com.goodow.realtime.operation.list.AbstractReplaceOperation;
+import com.goodow.realtime.operation.list.AbstractReplaceComponent;
 
-public class JsonReplaceOperation extends AbstractReplaceOperation<JsonElement[]> {
-  public static JsonReplaceOperation parse(JsonArray serialized) {
+public class JsonReplaceComponent extends AbstractReplaceComponent<JsonElement[]> {
+  public static JsonReplaceComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
     JsonElement[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
-    return new JsonReplaceOperation(parseId(serialized), parseStartIndex(serialized), null, values);
+    return new JsonReplaceComponent(parseId(serialized), parseStartIndex(serialized), null, values);
   }
 
-  public JsonReplaceOperation(String id, int startIndex, JsonElement[] oldValues,
+  public JsonReplaceComponent(String id, int startIndex, JsonElement[] oldValues,
       JsonElement[] newValues) {
     super(id, startIndex, oldValues, newValues);
   }
 
   @Override
-  public JsonReplaceOperation invert() {
+  public JsonReplaceComponent invert() {
     assert oldValues != null;
-    return new JsonReplaceOperation(id, startIndex, values, oldValues);
+    return new JsonReplaceComponent(id, startIndex, values, oldValues);
   }
 
   @Override
-  protected JsonReplaceOperation create(int startIndex, JsonElement[] oldValues,
+  protected JsonReplaceComponent create(int startIndex, JsonElement[] oldValues,
       JsonElement[] newValues) {
-    return new JsonReplaceOperation(id, startIndex, oldValues, newValues);
+    return new JsonReplaceComponent(id, startIndex, oldValues, newValues);
   }
 
   @Override

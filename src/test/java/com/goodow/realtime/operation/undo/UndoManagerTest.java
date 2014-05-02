@@ -13,33 +13,39 @@
  */
 package com.goodow.realtime.operation.undo;
 
-import com.goodow.realtime.operation.RealtimeOperation;
-import com.goodow.realtime.operation.list.string.StringDeleteOperation;
-import com.goodow.realtime.operation.list.string.StringInsertOperation;
+import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonArray;
+import com.goodow.realtime.json.JsonArray.ListIterator;
+import com.goodow.realtime.operation.OperationComponent;
+import com.goodow.realtime.operation.impl.CollaborativeOperation;
+import com.goodow.realtime.operation.list.string.StringDeleteComponent;
+import com.goodow.realtime.operation.list.string.StringInsertComponent;
 import com.goodow.realtime.operation.util.Pair;
 
 import junit.framework.TestCase;
 
-import java.util.List;
-
 public class UndoManagerTest extends TestCase {
-  private static RealtimeOperation delete(int startIndex, String text) {
-    return new RealtimeOperation("userId", null, new StringDeleteOperation(null, startIndex, text));
+  private static CollaborativeOperation delete(int startIndex, String text) {
+    return new CollaborativeOperation("userId", null, Json.createArray().push(
+        new StringDeleteComponent(null, startIndex, text)));
   }
 
-  private static RealtimeOperation delete(String id, int startIndex) {
-    return new RealtimeOperation("userId", null, new StringDeleteOperation(id, startIndex, "a"));
+  private static CollaborativeOperation delete(String id, int startIndex) {
+    return new CollaborativeOperation("userId", null, Json.createArray().push(
+        new StringDeleteComponent(id, startIndex, "a")));
   }
 
-  private static RealtimeOperation insert(int startIndex, String text) {
-    return new RealtimeOperation("userId", null, new StringInsertOperation(null, startIndex, text));
+  private static CollaborativeOperation insert(int startIndex, String text) {
+    return new CollaborativeOperation("userId", null, Json.createArray().push(
+        new StringInsertComponent(null, startIndex, text)));
   }
 
-  private static RealtimeOperation insert(String id, int startIndex) {
-    return new RealtimeOperation("userId", null, new StringInsertOperation(id, startIndex, "a"));
+  private static CollaborativeOperation insert(String id, int startIndex) {
+    return new CollaborativeOperation("userId", null, Json.createArray().push(
+        new StringInsertComponent(id, startIndex, "a")));
   }
 
-  UndoManagerPlus<RealtimeOperation> undoManager = UndoManagerFactory.createUndoManager();
+  UndoManagerPlus<CollaborativeOperation> undoManager = UndoManagerFactory.createUndoManager();
 
   public void testPlusMethods() {
     undoManager.checkpoint();
@@ -57,7 +63,7 @@ public class UndoManagerTest extends TestCase {
     undoManager.checkpoint();
     undoManager.undoableOp(insert(4, "a"));
     undoManager.nonUndoableOp(insert(1, "a"));
-    Pair<List<RealtimeOperation>, List<RealtimeOperation>> pair = undoManager.undoPlus();
+    Pair<CollaborativeOperation, CollaborativeOperation> pair = undoManager.undoPlus();
     equal(pair.first, delete(5, "a"));
     equal(pair.second, insert(1, "a"));
     undoManager.nonUndoableOp(insert(1, "a"));
@@ -151,7 +157,7 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.undo(), delete("i", 5));
     undoManager.nonUndoableOp(insert("i", 1));
     // equal(undo, delete("i", 8), delete("j", 5));
-    List<RealtimeOperation> undo = undoManager.undo();
+    CollaborativeOperation undo = undoManager.undo();
 
     undoManager.nonUndoableOp(insert("i", 1));
     equal(undoManager.undo(), delete("j", 6), delete("i", 9));
@@ -159,7 +165,7 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert("i", 10), insert("j", 6));
     undoManager.nonUndoableOp(insert("i", 1));
     // equal(undoManager.redo(), insert("i", 11), insert("j", 5));
-    List<RealtimeOperation> redo = undoManager.redo();
+    CollaborativeOperation redo = undoManager.redo();
 
     undoManager.nonUndoableOp(insert("i", 1));
     equal(undoManager.redo(), insert("i", 10));
@@ -204,12 +210,12 @@ public class UndoManagerTest extends TestCase {
     undoManager.nonUndoableOp(insert(1, "a"));
     equal(undoManager.undo(), delete(5, "a"));
     // equal(undoManager.undo(), delete(7, "a"));
-    List<RealtimeOperation> undo = undoManager.undo();
+    CollaborativeOperation undo = undoManager.undo();
 
     equal(undoManager.undo(), delete(7, "a"));
     equal(undoManager.redo(), insert(7, "a"));
     // equal(undoManager.redo(), insert(7, "a"));
-    List<RealtimeOperation> redo = undoManager.redo();
+    CollaborativeOperation redo = undoManager.redo();
 
     equal(undoManager.redo(), insert(5, "a"));
   }
@@ -233,7 +239,7 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.undo(), delete(5, "a"));
     undoManager.nonUndoableOp(insert(1, "a"));
     // equal(undoManager.undo(), delete(8, "a"));
-    List<RealtimeOperation> undo = undoManager.undo();
+    CollaborativeOperation undo = undoManager.undo();
 
     undoManager.nonUndoableOp(insert(1, "a"));
     equal(undoManager.undo(), delete(9, "a"));
@@ -241,7 +247,7 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert(10, "a"));
     undoManager.nonUndoableOp(insert(1, "a"));
     // equal(undoManager.redo(), insert(11, "a"));
-    List<RealtimeOperation> redo = undoManager.redo();
+    CollaborativeOperation redo = undoManager.redo();
 
     undoManager.nonUndoableOp(insert(1, "a"));
     equal(undoManager.redo(), insert(10, "a"));
@@ -265,13 +271,20 @@ public class UndoManagerTest extends TestCase {
     equal(undoManager.redo(), insert(5, "a"));
   }
 
-  final void equal(List<RealtimeOperation> ops, RealtimeOperation... expected) {
-    assertEquals(expected.length, ops.size());
-    int i = 0;
-    for (RealtimeOperation op : expected) {
-      assertEquals(op, ops.get(i));
-      assertEquals(op.invert(), ops.get(i).invert());
-      i++;
+  @SuppressWarnings("rawtypes")
+  final void equal(CollaborativeOperation actual, CollaborativeOperation... expected) {
+    final JsonArray components = Json.createArray();
+    for (CollaborativeOperation operation : expected) {
+      operation.components.forEach(new ListIterator<OperationComponent>() {
+        @Override
+        public void call(int index, OperationComponent component) {
+          components.push(component);
+        }
+      });
     }
+    CollaborativeOperation op = new CollaborativeOperation("userId", null, components);
+    assertEquals(op.components.length(), actual.components.length());
+    assertEquals(op, actual);
+    assertEquals(op.invert(), actual.invert());
   }
 }

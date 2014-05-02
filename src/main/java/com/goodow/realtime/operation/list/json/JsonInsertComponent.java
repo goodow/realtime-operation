@@ -15,27 +15,27 @@ package com.goodow.realtime.operation.list.json;
 
 import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.json.JsonElement;
-import com.goodow.realtime.operation.list.AbstractInsertOperation;
+import com.goodow.realtime.operation.list.AbstractInsertComponent;
 
-public class JsonInsertOperation extends AbstractInsertOperation<JsonElement[]> {
-  public static JsonInsertOperation parse(JsonArray serialized) {
+public class JsonInsertComponent extends AbstractInsertComponent<JsonElement[]> {
+  public static JsonInsertComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
     JsonElement[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
-    return new JsonInsertOperation(parseId(serialized), parseStartIndex(serialized), values);
+    return new JsonInsertComponent(parseId(serialized), parseStartIndex(serialized), values);
   }
 
-  public JsonInsertOperation(String id, int startIndex, JsonElement[] values) {
+  public JsonInsertComponent(String id, int startIndex, JsonElement[] values) {
     super(id, startIndex, values);
   }
 
   @Override
-  public JsonDeleteOperation invert() {
-    return new JsonDeleteOperation(id, startIndex, values);
+  public JsonDeleteComponent invert() {
+    return new JsonDeleteComponent(id, startIndex, values);
   }
 
   @Override
-  protected JsonInsertOperation create(int startIndex, JsonElement[] values) {
-    return new JsonInsertOperation(id, startIndex, values);
+  protected JsonInsertComponent create(int startIndex, JsonElement[] values) {
+    return new JsonInsertComponent(id, startIndex, values);
   }
 
   @Override

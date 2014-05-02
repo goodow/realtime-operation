@@ -15,37 +15,37 @@ package com.goodow.realtime.operation.list.json;
 
 import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.json.JsonElement;
-import com.goodow.realtime.operation.list.AbstractDeleteOperation;
+import com.goodow.realtime.operation.list.AbstractDeleteComponent;
 
-public class JsonDeleteOperation extends AbstractDeleteOperation<JsonElement[]> {
-  public static JsonDeleteOperation parse(JsonArray serialized) {
+public class JsonDeleteComponent extends AbstractDeleteComponent<JsonElement[]> {
+  public static JsonDeleteComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    return new JsonDeleteOperation(parseId(serialized), parseStartIndex(serialized),
+    return new JsonDeleteComponent(parseId(serialized), parseStartIndex(serialized),
         (int) serialized.getNumber(3));
   }
 
-  public JsonDeleteOperation(String id, int startIndex, int length) {
+  public JsonDeleteComponent(String id, int startIndex, int length) {
     super(id, startIndex, length);
   }
 
-  public JsonDeleteOperation(String id, int startIndex, JsonElement[] values) {
+  public JsonDeleteComponent(String id, int startIndex, JsonElement[] values) {
     super(id, startIndex, values);
   }
 
   @Override
-  public JsonInsertOperation invert() {
+  public JsonInsertComponent invert() {
     assert values != null;
-    return new JsonInsertOperation(id, startIndex, values);
+    return new JsonInsertComponent(id, startIndex, values);
   }
 
   @Override
-  protected JsonDeleteOperation create(int startIndex, int length) {
-    return new JsonDeleteOperation(id, startIndex, length);
+  protected JsonDeleteComponent create(int startIndex, int length) {
+    return new JsonDeleteComponent(id, startIndex, length);
   }
 
   @Override
-  protected JsonDeleteOperation create(int startIndex, JsonElement[] values) {
-    return new JsonDeleteOperation(id, startIndex, values);
+  protected JsonDeleteComponent create(int startIndex, JsonElement[] values) {
+    return new JsonDeleteComponent(id, startIndex, values);
   }
 
   @Override
