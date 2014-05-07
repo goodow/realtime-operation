@@ -16,17 +16,20 @@ package com.goodow.realtime.operation.impl;
 import com.goodow.realtime.json.Json;
 import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.json.JsonArray.ListIterator;
+import com.goodow.realtime.json.JsonObject;
 import com.goodow.realtime.operation.Operation;
 import com.goodow.realtime.operation.OperationComponent;
 
 public class CollaborativeOperation implements Operation<Object> {
-
+  public static final String UID = "uid";
+  public static final String SID = "sid";
+  public static final String OP = "op";
   public final String userId;
   public final String sessionId;
   public final JsonArray components; // List<OperationComponent>
 
   public CollaborativeOperation(String userId, String sessionId, JsonArray components) {
-    assert components != null && components.length() != 0 && components.indexOf(null) == -1;
+    assert components != null && components.indexOf(null) == -1;
     this.userId = userId;
     this.sessionId = sessionId;
     this.components = components;
@@ -99,20 +102,19 @@ public class CollaborativeOperation implements Operation<Object> {
         invertedComponents.push(inverted);
       }
     }
-    return invertedComponents.length() == 0 ? null : new CollaborativeOperation(userId, sessionId,
-        invertedComponents);
+    return new CollaborativeOperation(userId, sessionId, invertedComponents);
   }
 
   @Override
-  public JsonArray toJson() {
-    final JsonArray json = Json.createArray();
+  public JsonObject toJson() {
+    final JsonArray op = Json.createArray();
     components.forEach(new ListIterator<Operation<Object>>() {
       @Override
       public void call(int index, Operation<Object> component) {
-        json.push(component.toJson());
+        op.push(component.toJson());
       }
     });
-    return json;
+    return Json.createObject().set(UID, userId).set(SID, sessionId).set(OP, op);
   }
 
   @Override

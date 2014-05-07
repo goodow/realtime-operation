@@ -39,6 +39,7 @@ public class CollaborativeTransformer implements Transformer<CollaborativeOperat
 
   @Override
   public CollaborativeOperation compose(JsonArray operations) {
+    assert operations.length() > 0 && operations.indexOf(null) == -1;
     final CollaborativeOperation first = operations.<CollaborativeOperation> get(0);
     if (operations.length() == 1) {
       return first;
@@ -99,15 +100,16 @@ public class CollaborativeTransformer implements Transformer<CollaborativeOperat
 
   @Override
   public CollaborativeOperation createOperation(JsonObject opData) {
-    assert opData.getArray("op").length() > 0;
+    assert opData.getArray(CollaborativeOperation.OP).length() > 0;
     final JsonArray components = Json.createArray();
-    opData.getArray("op").forEach(new ListIterator<JsonArray>() {
+    opData.getArray(CollaborativeOperation.OP).forEach(new ListIterator<JsonArray>() {
       @Override
       public void call(int index, JsonArray component) {
         components.push(createComponent(component));
       }
     });
-    return new CollaborativeOperation(opData.getString("uid"), opData.getString("sid"), components);
+    return new CollaborativeOperation(opData.getString(CollaborativeOperation.UID), opData
+        .getString(CollaborativeOperation.SID), components);
   }
 
   @Override
@@ -115,11 +117,9 @@ public class CollaborativeTransformer implements Transformer<CollaborativeOperat
       CollaborativeOperation operation, CollaborativeOperation appliedOperation) {
     Pair<JsonArray, JsonArray> pair = transform(operation.components, appliedOperation.components);
     CollaborativeOperation transformed =
-        pair.first.length() == 0 ? null : new CollaborativeOperation(operation.userId,
-            operation.sessionId, pair.first);
+        new CollaborativeOperation(operation.userId, operation.sessionId, pair.first);
     CollaborativeOperation transformedApplied =
-        pair.second.length() == 0 ? null : new CollaborativeOperation(appliedOperation.userId,
-            appliedOperation.sessionId, pair.second);
+        new CollaborativeOperation(appliedOperation.userId, appliedOperation.sessionId, pair.second);
     return Pair.of(transformed, transformedApplied);
   }
 
