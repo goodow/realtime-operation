@@ -14,17 +14,16 @@
 package com.goodow.realtime.operation.list.json;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.AbstractInsertComponent;
 
-public class JsonInsertComponent extends AbstractInsertComponent<JsonElement[]> {
+public class JsonInsertComponent extends AbstractInsertComponent<JsonArray> {
   public static JsonInsertComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    JsonElement[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
+    JsonArray values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new JsonInsertComponent(parseId(serialized), parseStartIndex(serialized), values);
   }
 
-  public JsonInsertComponent(String id, int startIndex, JsonElement[] values) {
+  public JsonInsertComponent(String id, int startIndex, JsonArray values) {
     super(id, startIndex, values);
   }
 
@@ -34,7 +33,7 @@ public class JsonInsertComponent extends AbstractInsertComponent<JsonElement[]> 
   }
 
   @Override
-  protected JsonInsertComponent create(int startIndex, JsonElement[] values) {
+  protected JsonInsertComponent create(int startIndex, JsonArray values) {
     return new JsonInsertComponent(id, startIndex, values);
   }
 

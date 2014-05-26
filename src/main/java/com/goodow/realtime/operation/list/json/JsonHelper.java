@@ -18,73 +18,81 @@ import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.ListHelper;
 
-public class JsonHelper implements ListHelper<JsonElement[]> {
+public class JsonHelper implements ListHelper<JsonArray> {
   public static final int TYPE = 0;
   static final JsonHelper INSTANCE = new JsonHelper();
 
   @Override
-  public int length(JsonElement[] values) {
-    return values.length;
+  public int length(JsonArray values) {
+    return values.length();
   }
 
   @Override
-  public JsonElement[] parseValues(JsonArray serialized) {
+  public JsonArray parseValues(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE;
     int length = serialized.length();
     assert length >= 2;
-    JsonElement[] values = create(length - 1);
+    JsonArray values = Json.createArray();
     for (int i = 1; i < length; i++) {
-      values[i - 1] = serialized.<JsonElement> get(i);
+      values.push(serialized.<JsonElement>get(i));
     }
     return values;
   }
 
   @Override
-  public JsonElement[] replaceWith(JsonElement[] values, int startIndex, int length,
-      JsonElement[] replacement) {
-    int len = replacement == null ? 0 : replacement.length;
-    JsonElement[] array = create(values.length - length + len);
-    System.arraycopy(values, 0, array, 0, startIndex);
-    if (replacement != null) {
-      System.arraycopy(replacement, 0, array, startIndex, len);
+  public JsonArray replaceWith(JsonArray values, int startIndex, int length,
+      JsonArray replacement) {
+    final JsonArray array = Json.createArray();
+    for (int i = 0; i < startIndex; i++) {
+      array.push(values.get(i));
     }
-    System.arraycopy(values, startIndex + length, array, startIndex + len, values.length
-        - startIndex - length);
+    if (replacement != null) {
+      replacement.forEach(new JsonArray.ListIterator<Object>() {
+        @Override
+        public void call(int index, Object value) {
+          array.push(value);
+        }
+      });
+    }
+    for (int i = startIndex + length, len = values.length(); i < len; i++) {
+      array.push(values.get(i));
+    }
     return array;
   }
 
   @Override
-  public JsonElement[] subset(JsonElement[] values, int startIndex, int length) {
-    JsonElement[] array = create(length);
-    System.arraycopy(values, startIndex, array, 0, length);
-    return array;
+  public JsonArray subset(JsonArray values, int startIndex, int length) {
+    return subset(values, startIndex, length, 0, 0);
   }
 
   @Override
-  public JsonElement[] subset(JsonElement[] values, int startIndex0, int length0, int startIndex1,
+  public JsonArray subset(JsonArray values, int startIndex0, int length0, int startIndex1,
       int length1) {
     return subset(values, startIndex0, length0, values, startIndex1, length1);
   }
 
   @Override
-  public JsonElement[] subset(JsonElement[] values0, int startIndex0, int length0,
-      JsonElement[] values1, int startIndex1, int length1) {
-    JsonElement[] array = create(length0 + length1);
-    System.arraycopy(values0, startIndex0, array, 0, length0);
-    System.arraycopy(values1, startIndex1, array, length0, length1);
+  public JsonArray subset(JsonArray values0, int startIndex0, int length0,
+      JsonArray values1, int startIndex1, int length1) {
+    JsonArray array = Json.createArray();
+    for (int i = startIndex0; i < startIndex0 + length0; i++) {
+      array.push(values0.get(i));
+    }
+    for (int i = startIndex1; i < startIndex1 + length1; i++) {
+      array.push(values1.get(i));
+    }
     return array;
   }
 
   @Override
-  public JsonArray toJson(JsonElement[] values) {
-    JsonArray json = Json.createArray().push(TYPE);
-    for (JsonElement value : values) {
-      json.push(value);
-    }
+  public JsonArray toJson(JsonArray values) {
+    final JsonArray json = Json.createArray().push(TYPE);
+    values.forEach(new JsonArray.ListIterator<Object>() {
+      @Override
+      public void call(int index, Object value) {
+        json.push(value);
+      }
+    });
     return json;
-  }
-
-  protected JsonElement[] create(int length) {
-    return new JsonElement[length];
   }
 }

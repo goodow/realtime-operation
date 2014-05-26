@@ -14,18 +14,17 @@
 package com.goodow.realtime.operation.list.json;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.AbstractReplaceComponent;
 
-public class JsonReplaceComponent extends AbstractReplaceComponent<JsonElement[]> {
+public class JsonReplaceComponent extends AbstractReplaceComponent<JsonArray> {
   public static JsonReplaceComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
-    JsonElement[] values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
+    JsonArray values = JsonHelper.INSTANCE.parseValues(serialized.getArray(3));
     return new JsonReplaceComponent(parseId(serialized), parseStartIndex(serialized), null, values);
   }
 
-  public JsonReplaceComponent(String id, int startIndex, JsonElement[] oldValues,
-      JsonElement[] newValues) {
+  public JsonReplaceComponent(String id, int startIndex, JsonArray oldValues,
+      JsonArray newValues) {
     super(id, startIndex, oldValues, newValues);
   }
 
@@ -36,8 +35,8 @@ public class JsonReplaceComponent extends AbstractReplaceComponent<JsonElement[]
   }
 
   @Override
-  protected JsonReplaceComponent create(int startIndex, JsonElement[] oldValues,
-      JsonElement[] newValues) {
+  protected JsonReplaceComponent create(int startIndex, JsonArray oldValues,
+      JsonArray newValues) {
     return new JsonReplaceComponent(id, startIndex, oldValues, newValues);
   }
 

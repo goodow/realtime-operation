@@ -14,10 +14,9 @@
 package com.goodow.realtime.operation.list.json;
 
 import com.goodow.realtime.json.JsonArray;
-import com.goodow.realtime.json.JsonElement;
 import com.goodow.realtime.operation.list.AbstractDeleteComponent;
 
-public class JsonDeleteComponent extends AbstractDeleteComponent<JsonElement[]> {
+public class JsonDeleteComponent extends AbstractDeleteComponent<JsonArray> {
   public static JsonDeleteComponent parse(JsonArray serialized) {
     assert serialized.getNumber(0) == TYPE && serialized.length() == 4;
     return new JsonDeleteComponent(parseId(serialized), parseStartIndex(serialized),
@@ -28,7 +27,7 @@ public class JsonDeleteComponent extends AbstractDeleteComponent<JsonElement[]> 
     super(id, startIndex, length);
   }
 
-  public JsonDeleteComponent(String id, int startIndex, JsonElement[] values) {
+  public JsonDeleteComponent(String id, int startIndex, JsonArray values) {
     super(id, startIndex, values);
   }
 
@@ -44,7 +43,7 @@ public class JsonDeleteComponent extends AbstractDeleteComponent<JsonElement[]> 
   }
 
   @Override
-  protected JsonDeleteComponent create(int startIndex, JsonElement[] values) {
+  protected JsonDeleteComponent create(int startIndex, JsonArray values) {
     return new JsonDeleteComponent(id, startIndex, values);
   }
 
