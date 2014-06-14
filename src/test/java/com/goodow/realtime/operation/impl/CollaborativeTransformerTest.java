@@ -57,6 +57,28 @@ public class CollaborativeTransformerTest extends TestCase {
     equals(expected, pair.second.<AbstractComponent<?>> get(1));
   }
 
+  public void testTransformDeleteWithDelete() {
+    //          0123456
+    // clientOp  -  --
+    // serverOp    --
+    AbstractDeleteComponent<String> clientOp0 = new StringDeleteComponent(null, 1, "1");
+    AbstractDeleteComponent<String> clientOp1 = new StringDeleteComponent(null, 3, "45");
+    AbstractDeleteComponent<String> serverOp = new StringDeleteComponent(null, 3, "34");
+    JsonArray serverOps = Json.createArray().push(serverOp);
+    JsonArray clientOps = Json.createArray().push(clientOp0).push(clientOp1);
+    Pair<JsonArray, JsonArray> pair = transformer.transform(clientOps, serverOps);
+    AbstractComponent<?> expected;
+
+    assertEquals(2, pair.first.length());
+    equals(clientOp0, pair.first.<AbstractComponent<?>>get(0));
+    expected = new StringDeleteComponent(null, 2, "5");
+    equals(expected, pair.first.<AbstractComponent<?>> get(1));
+
+    assertEquals(1, pair.second.length());
+    expected = new StringDeleteComponent(null, 2, "3");
+    equals(expected, pair.second.<AbstractComponent<?>> get(0));
+  }
+
   public void testTransformServerOpToMultipleOps() {
     AbstractInsertComponent<String> clientOp0 = new StringInsertComponent(null, 3, "ab");
     AbstractReplaceComponent<String> clientOp1 = new StringReplaceComponent(null, 3, "abc", "def");

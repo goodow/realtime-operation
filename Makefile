@@ -2,7 +2,9 @@
 .PHONY: default clean translate link
 
 include ../resources/make/common.mk
+# J2OBJC_DIST = ../realtime-store/Project/Pods/J2ObjC/dist
 
+OPERATION_GEN_DIR = ../realtime-store/GDStore/Classes/generated
 MAIN_SOURCES = $(subst $(MAIN_SRC_DIR)/,,$(shell find $(MAIN_SRC_DIR) -name *.java))
 MAIN_GEN_SOURCES = $(MAIN_SOURCES:%.java=$(OPERATION_GEN_DIR)/%.m)
 MAIN_OBJECTS = $(MAIN_SOURCES:%.java=$(BUILD_DIR)/main/%.o)
@@ -12,9 +14,10 @@ TEST_SOURCES = $(subst $(TEST_SRC_DIR)/,,$(shell find $(TEST_SRC_DIR) -name *.ja
 TEST_GEN_SOURCES = $(TEST_SOURCES:%.java=$(TEST_GEN_DIR)/%.m)
 TEST_OBJECTS = $(TEST_SOURCES:%.java=$(BUILD_DIR)/test/%.o)
 
-CLASSPATH = $(M2_REPO)/com/goodow/gwt/gwt-elemental/2.5.1-SNAPSHOT/gwt-elemental-2.5.1-SNAPSHOT.jar
-    
-default: clean translate test
+TEMP_PATH = $(M2_REPO)/com/goodow/realtime/realtime-json/0.5.5-SNAPSHOT/realtime-json-0.5.5-SNAPSHOT.jar
+CLASSPATH = $(shell echo $(TEMP_PATH) | sed 's/ //g')
+
+default: clean translate
 
 translate: translate_main translate_test
 
@@ -31,7 +34,6 @@ translate_main: pre_translate_main $(MAIN_GEN_SOURCES)
 	    -classpath $(CLASSPATH) \
 	    `cat $(MAIN_SOURCE_LIST)` ; \
 	fi
-	@cd $(OPERATION_GEN_DIR);mkdir -p ../include;tar -c . | tar -x -C ../include --include=*.h
 
 $(BUILD_DIR)/main/%.o: $(OPERATION_GEN_DIR)/%.m $(MAIN_SRC_DIR)/%.java
 	@mkdir -p `dirname $@`
@@ -82,4 +84,4 @@ $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)/test
 
 clean:
-	@rm -rf $(OPERATION_GEN_DIR) $(TEST_GEN_DIR) $(BUILD_DIR)
+	@rm -rf $(OPERATION_GEN_DIR)/com/goodow/realtime/operation/ $(TEST_GEN_DIR) $(BUILD_DIR)
