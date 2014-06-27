@@ -126,7 +126,13 @@ public class CollaborativeTransformer implements Transformer<CollaborativeOperat
   protected Pair<JsonArray, JsonArray> transform(JsonArray operations, JsonArray appliedOperations) {
     assert operations.indexOf(null) == -1 && appliedOperations.indexOf(null) == -1;
     final JsonArray transformed = Json.createArray();
-    final JsonArray transformedApplied = appliedOperations.copy();
+    final JsonArray transformedApplied = Json.createArray();
+    appliedOperations.forEach(new ListIterator<Operation<?>>() {
+      @Override
+      public void call(int index, Operation<?> operation) {
+        transformedApplied.push(operation);
+      }
+    });
     operations.forEach(new ListIterator<Operation<?>>() {
       @Override
       public void call(int index, Operation<?> operation) {
