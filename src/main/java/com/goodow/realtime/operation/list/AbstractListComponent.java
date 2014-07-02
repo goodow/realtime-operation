@@ -37,10 +37,12 @@ public abstract class AbstractListComponent<T> extends AbstractComponent<ListTar
   }
 
   /**
+   * Transform the specified cursor by the this operation
+   *
    * @param index
    * @param rigthSide Which 'side' of the gap the cursor is in.
    * @param canBeDeleted
-   * @return
+   * @return the new cursor
    */
   public abstract int transformIndexReference(int index, boolean rigthSide, boolean canBeDeleted);
 

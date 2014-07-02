@@ -24,6 +24,7 @@ import com.goodow.realtime.operation.create.CreateComponent;
 import com.goodow.realtime.operation.cursor.ReferenceShiftedComponent;
 import com.goodow.realtime.operation.list.AbstractDeleteComponent;
 import com.goodow.realtime.operation.list.AbstractInsertComponent;
+import com.goodow.realtime.operation.list.AbstractListComponent;
 import com.goodow.realtime.operation.list.AbstractReplaceComponent;
 import com.goodow.realtime.operation.list.SimpleDeleteComponent;
 import com.goodow.realtime.operation.list.json.JsonHelper;
@@ -154,6 +155,12 @@ public class CollaborativeTransformer implements Transformer<CollaborativeOperat
     assert other != null;
     if (operation instanceof AbstractComponent
         && !((AbstractComponent<?>) operation).isSameId(other)) {
+      if (operation instanceof ReferenceShiftedComponent && other instanceof AbstractListComponent
+          && ((ReferenceShiftedComponent) operation).referencedObjectId
+          .equals(((AbstractListComponent) other).id)) {
+        // transform ReferenceShiftedComponent against list operation
+        operation = operation.transform(other, applied);
+      }
       transform(transformedResults, operation, others, ++startIndex, applied);
       return;
     }

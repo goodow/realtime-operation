@@ -16,6 +16,7 @@ package com.goodow.realtime.operation.cursor;
 import com.goodow.realtime.json.JsonArray;
 import com.goodow.realtime.operation.Operation;
 import com.goodow.realtime.operation.impl.AbstractComponent;
+import com.goodow.realtime.operation.list.AbstractListComponent;
 
 public class ReferenceShiftedComponent extends AbstractComponent<Void> {
   public static final int TYPE = 25;
@@ -53,11 +54,20 @@ public class ReferenceShiftedComponent extends AbstractComponent<Void> {
 
   @Override
   public ReferenceShiftedComponent transform(Operation<Void> other, boolean applied) {
-    assert other instanceof ReferenceShiftedComponent && isSameId(other);
-    ReferenceShiftedComponent op = (ReferenceShiftedComponent) other;
-    assert referencedObjectId.equals(op.referencedObjectId);
-    return applied ? null : new ReferenceShiftedComponent(id, referencedObjectId, newIndex,
-        canBeDeleted, op.newIndex);
+    if (other instanceof ReferenceShiftedComponent) {
+      assert isSameId(other);
+      ReferenceShiftedComponent op = (ReferenceShiftedComponent) other;
+      assert referencedObjectId.equals(op.referencedObjectId);
+      return applied ? null : new ReferenceShiftedComponent(id, referencedObjectId, newIndex,
+          canBeDeleted, op.newIndex);
+    } else {
+      assert other instanceof AbstractListComponent &&
+             referencedObjectId.equals(((AbstractListComponent) other).id);
+      AbstractListComponent op = (AbstractListComponent) other;
+      return new ReferenceShiftedComponent(id, referencedObjectId,
+          op.transformIndexReference(newIndex, true, canBeDeleted), canBeDeleted,
+          op.transformIndexReference(oldIndex, true, canBeDeleted));
+    }
   }
 
   @Override

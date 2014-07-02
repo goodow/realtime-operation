@@ -125,11 +125,6 @@ public abstract class AbstractReplaceComponent<T> extends AbstractListComponent<
   }
 
   @Override
-  public int transformIndexReference(int index, boolean rigthSide, boolean canBeDeleted) {
-    return index;
-  }
-
-  @Override
   public OperationComponent<ListTarget<T>>[] transformComponent(OperationComponent<ListTarget<T>> other,
       boolean applied) {
     AbstractListComponent<T> op = (AbstractListComponent<T>) other;
@@ -161,6 +156,11 @@ public abstract class AbstractReplaceComponent<T> extends AbstractListComponent<
       default:
         throw new RuntimeException("Unsupported List Operation type: " + op.type);
     }
+  }
+
+  @Override
+  public int transformIndexReference(int index, boolean rigthSide, boolean canBeDeleted) {
+    return index;
   }
 
   protected abstract AbstractReplaceComponent<T> create(int startIndex, T oldValues, T newValues);

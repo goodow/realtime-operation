@@ -17,10 +17,15 @@ public abstract class OperationComponent<T> implements Operation<T> {
 
   @Override
   public Operation<T> transform(Operation<T> other, boolean applied) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(getMessage(other, applied));
   }
 
   public OperationComponent<T>[] transformComponent(OperationComponent<T> other, boolean applied) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(getMessage(other, applied));
+  }
+
+  private String getMessage(Operation<T> other, boolean applied) {
+    return "Transform applied(" + applied + ") " + this.toJson().toJsonString() +
+           "\nAgainst " + other.toJson().toJsonString();
   }
 }

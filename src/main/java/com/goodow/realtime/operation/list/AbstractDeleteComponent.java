@@ -113,17 +113,6 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
   }
 
   @Override
-  public int transformIndexReference(int index, boolean rigthSide, boolean canBeDeleted) {
-    if (startIndex + length <= index) {
-      return index - length;
-    } else if (startIndex <= index) {
-      return canBeDeleted ? -1 : startIndex;
-    } else {
-      return index;
-    }
-  }
-
-  @Override
   public AbstractDeleteComponent<T>[] transformComponent(OperationComponent<ListTarget<T>> other,
       boolean applied) {
     AbstractListComponent<T> op = (AbstractListComponent<T>) other;
@@ -137,6 +126,17 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
     return asArray(values == null ? create(startIndex, len0) : create(startIndex, getHelper()
         .subset(values, 0, len0)), values == null ? create(startIndex + op.length, len1) : create(
         startIndex + op.length, getHelper().subset(values, len0, len1)));
+  }
+
+  @Override
+  public int transformIndexReference(int index, boolean rigthSide, boolean canBeDeleted) {
+    if (startIndex + length <= index) {
+      return index - length;
+    } else if (startIndex <= index) {
+      return canBeDeleted ? -1 : startIndex;
+    } else {
+      return index;
+    }
   }
 
   protected abstract AbstractDeleteComponent<T> create(int startIndex, int length);
