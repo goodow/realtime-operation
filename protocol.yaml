@@ -1,0 +1,47 @@
+# Define anchors to be referenced below
+---
+&serializedValue
+  - 21 # The value type. 21: JSON, 2: object reference id
+  - Edit Me! # Arbitrary JSON value or an object reference id string
+...
+
+---
+# Create operation
+- 7 # Create operation type
+- id # The id of the target which this operation will create
+- 0 # The type of the target
+    # 0: CollaborativeMap, 1: CollaborativeList, 2: CollaborativeString, 4: IndexReference
+
+# Map operation
+- 8 # Map operation type
+- root # The id of the map target on which this operation applies itself
+- demo_string # The key whose value changed
+- *serializedValue # The new value. When absent, this is a delete operation
+
+# List and string insert operation
+- 5 # Insert operation type
+- gdegspwishfkqk981 # The id of the target
+- 0 # The index at which to insert.
+- - 0 # 0: List insert operation, 1: string insert operation
+  - [*serializedValue] # The values to insert, or a string value for string operation
+
+# List and string delete operation
+- 6 # Delete operation type
+- gdegspwishfkqk981 # The id of the target
+- 0 # The start index of the range to remove (inclusive).
+- 2 # The length to delete
+
+# List replace operation
+- 11 # List replace operation type
+- gdegspwishfkqk981 # The id of the list target
+- 0 # The index at which to replace.
+- - 0
+  - [*serializedValue] # The values to replace
+
+# Reference shifted operation
+- 25 # Reference shifted operation type
+- gdey3qrl5hga4jx7g # The id of the index reference target
+- gdegspwishfkqk981 # The object id the cursor target points to.
+- 2 # The new index this operation will change to
+- true # Whether the cursor can be deleted
+- -1 # The old index
