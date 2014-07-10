@@ -158,7 +158,7 @@ public class DeleteTest extends TestCase {
 
     // A's replacement overlaps B's deletion
     // ....[...]....
-    // ...[..]....
+    // ...{..}....
     op2 = new StringReplaceComponent(null, 0, "012", "abc");
     transformedOp[0] = op1.transform(op2, true);
     expected0 = new SimpleDeleteComponent<String>(null, 2, "c34");
@@ -168,7 +168,7 @@ public class DeleteTest extends TestCase {
 
     // A's replacement overlaps B's deletion
     // ....[...]....
-    // ......[...]..
+    // ......{...}..
     op2 = new StringReplaceComponent(null, 3, "345", "abc");
     transformedOp[0] = op1.transform(op2, true);
     expected0 = new SimpleDeleteComponent<String>(null, 2, "2ab");

@@ -42,24 +42,24 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
       case AbstractInsertComponent.TYPE:
         if (op.startIndex <= startIndex) {
           // ....[...]....
-          // ...[.......
-          return values == null ? create(startIndex + op.length, length) : create(startIndex
-              + op.length, values);
+          // ...|.......
+          return canUndo() ? create(startIndex + op.length, values)
+                           : create(startIndex + op.length, length);
         } else if (op.startIndex < endIndex0) {
           // ....[...]....
-          // ......[.....
+          // ......|.....
           return super.transform(other, applied);
         } else {
           // ....[...]....
-          // .........[.].
+          // .........|..
           return this;
         }
       case AbstractDeleteComponent.TYPE:
         if (endIndex1 <= startIndex) {
           // ....[...]....
           // .[.]...
-          return values == null ? create(startIndex - op.length, length) : create(startIndex
-              - op.length, values);
+          return canUndo() ? create(startIndex - op.length, values)
+                           : create(startIndex - op.length, length);
         } else if (op.startIndex >= endIndex0) {
           // ....[...]....
           // .........[.].
@@ -68,27 +68,29 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
           // ....[...]....
           // ...[..]...]
           int len = endIndex0 - endIndex1;
-          return endIndex1 < endIndex0 ? values == null ? create(op.startIndex, len) : create(
-              op.startIndex, getHelper().subset(values, endIndex1 - startIndex, len)) : null;
+          return endIndex1 < endIndex0 ? (canUndo() ? create(op.startIndex, getHelper()
+              .subset(values, endIndex1 - startIndex, len)) : create(op.startIndex, len)) : null;
         } else {
           // ....[...]....
           // .....[.]..]
           if (endIndex1 < endIndex0) {
-            return values == null ? create(startIndex, length - op.length) : create(startIndex,
-                getHelper().replaceWith(values, op.startIndex - startIndex, op.length, null));
+            return canUndo() ? create(startIndex, getHelper()
+                .replaceWith(values, op.startIndex - startIndex, op.length, null))
+                : create(startIndex, length - op.length);
           } else {
-            return values == null ? create(startIndex, op.startIndex - startIndex) : create(
-                startIndex, getHelper().subset(values, 0, op.startIndex - startIndex));
+            return canUndo() ? create(startIndex, getHelper()
+                .subset(values, 0, op.startIndex - startIndex))
+                : create(startIndex, op.startIndex - startIndex);
           }
         }
       case AbstractReplaceComponent.TYPE:
-        if (values == null || endIndex1 <= startIndex || op.startIndex >= endIndex0) {
+        if (!canUndo() || endIndex1 <= startIndex || op.startIndex >= endIndex0) {
           // ....[...]....
-          // .[.]. OR .[.].
+          // .{.}. OR .{.}.
           return this;
         } else if (op.startIndex <= startIndex) {
           // ....[...]....
-          // ...[..]...]
+          // ...{..}...}
           if (endIndex1 < endIndex0) {
             return create(startIndex, getHelper().subset(op.values, startIndex - op.startIndex,
                 endIndex1 - startIndex, values, endIndex1 - startIndex, endIndex0 - endIndex1));
@@ -98,7 +100,7 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
           }
         } else {
           // ....[...]....
-          // .....[.]..]
+          // .....{.}..}
           if (endIndex1 < endIndex0) {
             return create(startIndex, getHelper().replaceWith(values, op.startIndex - startIndex,
                 op.length, op.values));
@@ -120,12 +122,13 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
     assert op.type == AbstractInsertComponent.TYPE && op.startIndex > startIndex
         && op.startIndex < endIndex0;
     // ....[...]....
-    // ......[.....
+    // ......|.....
     int len0 = op.startIndex - startIndex;
     int len1 = length - len0;
-    return asArray(values == null ? create(startIndex, len0) : create(startIndex, getHelper()
-        .subset(values, 0, len0)), values == null ? create(startIndex + op.length, len1) : create(
-        startIndex + op.length, getHelper().subset(values, len0, len1)));
+    return asArray(canUndo() ? create(startIndex, getHelper().subset(values, 0, len0))
+                             : create(startIndex, len0),
+                  canUndo() ? create(startIndex + op.length, getHelper().subset(values, len0, len1))
+                            : create(startIndex + op.length, len1));
   }
 
   @Override
@@ -142,4 +145,8 @@ public abstract class AbstractDeleteComponent<T> extends AbstractListComponent<T
   protected abstract AbstractDeleteComponent<T> create(int startIndex, int length);
 
   protected abstract AbstractDeleteComponent<T> create(int startIndex, T values);
+
+  private boolean canUndo() {
+    return values != null;
+  }
 }
